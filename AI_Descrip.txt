@@ -1,0 +1,104 @@
+MaxAttackRange = const c #s.t. c^2*boardsize is reasonable (<20,000,000 or so perferably)
+
+prob_add(x,y)   =   x + y - (x * y)
+
+prob_sum_of [] = 0
+	| L = prob_add(hd(L),prob_sum_of(tl(L)))
+
+Val(T,M,P) = (if IsBuilding(T) 
+			 then Cost(T)
+			 else (Cost(T) + FutureMoveVal(T,M,P))
+			 ) / T.hitpoints() #todo: try different ways to make value dependent on how much it has already been killed
+
+ChanceSomethingThere(P,M) = prob_add(BuildProb(P,M),prob_sum_of(MoveProb(T,M,P) for T in AllTroops))
+
+DoesBlock(PB,P1,P2) = int(abs(P1.Y - P2.Y / P1.X - P2.X)) == int(abs(PB.Y - P2.Y / PB.X - P2.X)) # todo : check for accuracy from code
+BlockingChance(P1,P2,M) = 
+	sum_of((
+		if DoesBlock(P,P1,P2)
+		then ChanceSomethingThere(P,M)
+		else 0.0)
+	for P in PsBetween(P1,P2))
+	
+BlocksAttacksChance(P,M) = sum_of(
+                                (DoesBlock(P,PA,PD) - (BlockingChance(PA,PD,M) - DoesBlock(P,PA,PD)))
+                                    * ()
+                                for PA in square_range(P,MaxAttackRange) for PD in square_range(P,MaxAttackRange)
+                                for AT in FriendTroops for ET in EnemyTroops)
+
+AttackTroopPointProb(AT,DT,M,AP,DP) = MoveProb(DT,M,DP) * BlockingChance(AP,DP,M) * WinChance(AT,DT) #todo: check that MoveProb makes sense in this context
+
+TroopAttackValGather(AT,M,AP) = 
+    tpvals = [ValInfo<Val(DT,M,DP), AttackTroopPointProb(AT,DT,M,AP,DP)>
+                for DT in EnemyTroops 
+                    for DP in square_range(AP,AT.range) exclude AP]
+    tprobs (Troop->Prob)
+    tpvals = sort(tpvals,greatest_in_front)
+    
+    attacks((DT,DP)->prob)
+    
+    tot_prob = 0
+    for (val,prob_base,troop,TP) in tpvals:
+        attprob = prob_base * (1 - tot_prob)
+        tot_prob += attprob
+        attacks[troop,TP] = attprob
+    
+    return attacks
+
+#the chance of attacking DT from AP, calculated by reasoning that if there is another troop of greater value in AT's range, AT will not attack DT 
+AttackTroopSpotProb(AT,DT,M,AP,DP) = 
+    (1.0 - prob_sum_of(
+            if Val(EnT,M,DP) > Val(DT,M,DP) and EnT != DT
+            then AttackTroopPointProb(AT,EnT,M,AP,DP) 
+            else 0.0
+        for EnT in EnemyTroops))
+    * AttackTroopPointProb(AT,DT,M,AP,DP)
+    
+AttackVal(AT,M,AP) = sum_of(Val(DT,M,DP) * TroopAttackValGather(AT,M,AP)[DT,DP] for DT in EnemyTroops for DP in square_range(AP,AT.range) exclude AP)
+
+NetValModifier(T,M,P) = (AttackVal(T,M,P)
+							- sum_of(AttackTroopVal(EnT,T,M,P) for EnT in EnemyTroops)
+						 * (1 - ChanceSomethingThere(P,M)))
+						 
+#accumulates the value of moving to locations
+MoveToVal(T,0,P) = NetValModifier(T,0,P)
+	| MoveToVal(T,M,P) = 
+			NetValModifier(T,M,P) + 
+				max_of(
+					MoveToVal(T,M-1,P)
+					for P in square_range(P,1)
+				)
+
+#represents the total value of the path the troop is traveling on both forwards and backwards in time
+MovePathVal(T,MaxM,P) = MoveToVal(T,MaxM,P)
+	| MovePathVal(T,M,P) = 
+		(max_of( MovePathVal(T,M+1,P), P)
+				for P in square_range(P,1))
+			- (MoveToVal(T,M+1,P) - NetValModifier(T,M+1,P)) #the value of the best child move of M+1 (>= MoveToVal(T,M,P))
+			+ MoveToVal(T,M,P)
+		
+#represents the accumulated value of the move path ahead of it
+FutureMoveVal(T,M,P) = MovePathVal(T,M,P) + NetValModifier(T,M,P) - MoveToVal(T,M,P)
+			
+#MoveProb(T,M,P) = MovePathVal(T,M,P) / sum_of(MovePathVal(T,M,MP) for MP in AllSqares)
+
+BuildProb(P,0) = if ThereIsBuilding(P) then 1.0 else 0.0
+	| BuildProb(P,M) = BuildProb(P,M-1) - sum_A_over_enemies(BuildProb(P,M))
+
+LandVal(Play) = sum_of(B.cost() in Play.Buildings) /
+					sum_of(if is_fully_dominated_by(P,Play) then 1.0 else 0.0 for P in BoardSquares)
+LandVal(P) = 
+
+#Micro Move
+
+val_attack(0,T,MP,AP) > 0 #todo:list the actual initial value here
+	| val_attack(I,T,MP,AP) = val_attack(I-1,T,MP,AP) - val_attack(I-1,T,MP,AP) * 
+		sum(
+			sum(val_adj(I-1,AT,AMP,AP) for AMP in AT.movebox)
+			for AT in EnemyTroops
+		)
+
+val_move(T,P)
+val_tot(T,MP) = val_move(T,MP) + sum(val_attack(T,P))
+adjval_m(T,M)
+adjval_a(T,M,A)

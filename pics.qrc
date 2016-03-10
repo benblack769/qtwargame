@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Pictures/Armor.png</file>
+        <file>Pictures/Armory.bmp</file>
+        <file>Pictures/BA.png</file>
+        <file>Pictures/BA_Factory.bmp</file>
+        <file>Pictures/Background.bmp</file>
+        <file>Pictures/Catapult.png</file>
+        <file>Pictures/CatFactory.bmp</file>
+        <file>Pictures/DestroyedSquare.bmp</file>
+        <file>Pictures/FireSquare.bmp</file>
+        <file>Pictures/Horse.png</file>
+        <file>Pictures/LargeFarm.bmp</file>
+        <file>Pictures/Size1Cata.bmp</file>
+        <file>Pictures/SmallFarm.bmp</file>
+        <file>Pictures/Soldier.png</file>
+        <file>Pictures/Stable.bmp</file>
+        <file>Pictures/Torch.png</file>
+        <file>Pictures/TorchFactory.bmp</file>
+        <file>Pictures/TrainCenter.bmp</file>
+        <file>Pictures/VertiCata.bmp</file>
+        <file>Pictures/Wall.bmp</file>
+        <file>Pictures/WallIcon.bmp</file>
+        <file>Pictures/WallMiddle.bmp</file>
+        <file>Pictures/Highlight.png</file>
+    </qresource>
+</RCC>
