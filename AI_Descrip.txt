@@ -1,6 +1,6 @@
 MaxAttackRange = const c #s.t. c^2*boardsize is reasonable (<20,000,000 or so perferably)
 
-prob_add(x,y)   =   x + y - (x * y)
+prob_add(x,y) = x + y - (x * y)
 
 prob_sum_of [] = 0
 	| L = prob_add(hd(L),prob_sum_of(tl(L)))
@@ -16,7 +16,8 @@ AttackTroopPointProb(AT,DT,M,AP,DP) = MoveProb_PrevIteration(DT,M,DP) * WinChanc
 
 all_attacks_prob(M) := ((DT,Point)->Prob)
 
-TroopAttackValGather(AT,M,AP) =
+TroopAttackValGather(AT,M,AP) := ((DT,DP)->prob)
+
     tpvals = [ValInfo<Val(DT,M,DP), AttackTroopPointProb(AT,DT,M,AP,DP)>
                 for DT in EnemyTroops
                     for DP in square_range(AP,AT.range) exclude AP]
@@ -32,22 +33,20 @@ TroopAttackValGather(AT,M,AP) =
         attacks[troop,TP] = attprob
         all_attacks_prob(M)[troop,TP] (prob)+= attprob
 
-    return attacks
+    return attack
 
-AttackTroopPointVal(AT,DT,M,AP,DP) = Val(DT,M,DP) * TroopAttackValGather(AT,M,AP)[DT,DP]
-
-AttackVal(AT,M,AP) = sum_of(AttackTroopPointVal(AT,DT,M,AP,DP) for DT in EnemyTroops for DP in square_range(AP,AT.range) exclude AP)
+AttackVal(AT,M,AP) = sum_of(Val(DT,M,DP) * TroopAttackValGather(AT,M,AP)[DT,DP] for DT in EnemyTroops for DP in square_range(AP,AT.range) exclude AP)
 
 NetValModifier(T,M,P) = (AttackVal(T,M,P) - Val(T,M,P) * all_attacks_prob(M)[T,P]) * (1 - ChanceSomethingThere(P,M))#todo:check ChanceSomethingThere for necessity and consistencys
 
 #accumulates the value of moving to locations
 MoveToVal(T,0,P) = NetValModifier(T,0,P)
-	| MoveToVal(T,M,P) =
-			NetValModifier(T,M,P) +
-				max_of(
-					MoveToVal(T,M-1,P)
-					for P in square_range(P,1)
-				)
+        | MoveToVal(T,M,P) =
+                        NetValModifier(T,M,P) +
+                                max_of(
+                                        MoveToVal(T,M-1,P)
+                                        for P in square_range(P,1)
+                                )
 
 #represents the total value of the path the troop is traveling on both forwards and backwards in time
 MovePathVal(T,MaxM,P) = MoveToVal(T,MaxM,P)
@@ -62,10 +61,22 @@ FutureMoveVal(T,M,P) = MovePathVal(T,M,P) + NetValModifier(T,M,P) - MoveToVal(T,
 
 ValModfier(V) = V #todo:consider making this non-liniar
 
-MoveProb(T,M,P) = ValModfier(MovePathVal(T,M,P)) / sum_of(ValModfier(MovePathVal(T,M,MP)) for MP in AllSqares)
+MoveProb(T,0) := (Point->Prob)
+    probs :=  (Point->(Prob default 0))
+    for P in Board:
+        probs[P] = 0.0
+    probs[T.P] = 1.0
+    return probs
 
-BuildProb(P,0) = if ThereIsBuilding(P) then 1.0 else 0.0
-	| BuildProb(P,M) = BuildProb(P,M-1) - sum_A_over_enemies(BuildProb(P,M))
+MoveProb(T,M) := (Point->(Prob default 0))
+    probs :=  (Point->Prob)
+    prevps = MoveProb(T,M-1)
+    for BP in Board:
+        for PP in SquareIter(BP,1):
+            probs[BP] += prevps[PP]
+    return probs
+
+MoveProb(T,M,P) = ValModfier(MovePathVal(T,M,P)) / sum_of(ValModfier(MovePathVal(T,M,MP)) for MP in AllSqares)
 
 LandVal(Play) = #look at how landVal is calculated in the code
 
