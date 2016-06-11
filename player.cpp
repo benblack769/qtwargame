@@ -296,7 +296,7 @@ bool Player::PlaceNewBuilding(BuildingTypes Build,int x1,int y1,int x2,int y2){
 
     vector<Point> BPs;
     //checks to see if the spots are open
-    for (Point P : RectIterate(LowX,LowY,HighX,HighY)){
+    for (Point P : RectIterateInclusive(LowX,LowY,HighX,HighY)){
         BPs.push_back(P);
         if(!BlankPoint(P) || PlayerDom[P].Player != PlayerNum || PlayerDom[P].Influence < MaximumDomination)
             return false;

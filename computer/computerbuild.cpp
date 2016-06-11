@@ -256,7 +256,7 @@ pair<Point,Point> SimpleCompPlayer::FindBestBuildSpot(BuildingTypes Build){
         double CurVal = 0;
         bool CanBuild = true;
         //iterate over the spot the building needs to be built in
-        for (Point BP: RectIterate(P.X, P.Y, P.X + XAdd, P.Y + YAdd)){
+        for (Point BP: RectIterateInclusive(P.X, P.Y, P.X + XAdd, P.Y + YAdd)){
             CurVal += BoardValues[BP];
             if (!BlankPoint(BP) || PlayerDom[BP].Influence != MaximumDomination || PlayerDom[BP].Player != PlayerNum)
                 CanBuild = false;

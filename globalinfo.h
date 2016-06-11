@@ -1,4 +1,7 @@
 #pragma once
+#include "point.hpp"
+#include <inttypes.h>
+
 typedef unsigned int uint;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
@@ -27,18 +30,10 @@ constexpr int DEBUG_MACRO_WIDTH = 30;
 constexpr int DEBUG_MACRO_HEIGHT = 20;
 #endif
 
-#include <inttypes.h>
-
 struct Domination{
     int32_t Player;
     int32_t Influence;
     Domination():Player(0),Influence(0){}
     Domination(int32_t inPlayer,int32_t inInfluence):Player(inPlayer),Influence(inInfluence){}
-};
-struct Point{//these need to be int32 for addition reasons
-    int32_t X;
-    int32_t Y;
-    Point():X(0),Y(0){}
-    Point(int32_t inX,int32_t inY):X(inX),Y(inY){}
 };
 using namespace std;

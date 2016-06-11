@@ -80,7 +80,7 @@ void ResetGame(){
     //places the buildings
     for (int p : range(NumOfPlayers)){
         Point StartP = StartCenters[p];
-        for (Point P : RectIterate(StartP.X - XMinDisAway / 2, StartP.Y - YMinDisAway / 2, StartP.X + XMinDisAway / 2, StartP.Y + YMinDisAway / 2)){
+        for (Point P : RectIterateInclusive(StartP.X - XMinDisAway / 2, StartP.Y - YMinDisAway / 2, StartP.X + XMinDisAway / 2, StartP.Y + YMinDisAway / 2)){
             PlayerDom[P].Player = p;
             PlayerDom[P].Influence = MaximumDomination;
         }
