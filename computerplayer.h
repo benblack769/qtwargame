@@ -6,7 +6,7 @@
 #include "group.h"
 
 #ifdef Debug_Macro_Move
-#include "two_d_array.h"
+#include "headerlib/two_d_array.h"
 #endif
 
 struct AttackInfo{

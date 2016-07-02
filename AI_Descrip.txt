@@ -63,17 +63,26 @@ ValModfier(V) = V #todo:consider making this non-liniar
 
 MoveProb(T,0) := (Point->Prob)
     probs :=  (Point->(Prob default 0))
-    for P in Board:
-        probs[P] = 0.0
     probs[T.P] = 1.0
     return probs
 
-MoveProb(T,M) := (Point->(Prob default 0))
-    probs :=  (Point->Prob)
+MoveProb(T,M) := (Point->Prob)
+    probs :=  (Point->(Prob default 0))
     prevps = MoveProb(T,M-1)
     for BP in Board:
+		ValRat (Point->Ratio)
+		#normal value ratios
+		for MP in SquareIter(BP,1):
+			ValRat[MP] = ValModfier(MovePathVal(T,M,MP)) / sum_of(ValModfier(MovePathVal(T,M,MMP)) for MMP in AllSqares)
+			
+		adjval = 0
         for PP in SquareIter(BP,1):
-            probs[BP] += prevps[PP]
+            probmul = probs[BP] * prevps[PP]
+			valadd = ValRat[PP] * (probs[BP] - probmul) #basically a probability add
+			probs[PP] += valadd
+			#we need sumof(valadd over range) to be probs[BP]
+			
+			ValRat = (1 - probmul)
     return probs
 
 MoveProb(T,M,P) = ValModfier(MovePathVal(T,M,P)) / sum_of(ValModfier(MovePathVal(T,M,MP)) for MP in AllSqares)

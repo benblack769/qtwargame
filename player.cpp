@@ -2,9 +2,9 @@
 #include "player.h"
 #include "help/helpstuff.h"
 #include "help/pointoperators.h"
-#include <RangeIterator.h>
+#include <headerlib/RangeIterator.h>
 #include <fstream>
-#include <for_each_extend.hpp>
+#include <headerlib/for_each_extend.hpp>
 #include <QMessageBox>
 #include "base.h"
 

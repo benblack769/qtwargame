@@ -25,6 +25,8 @@ protected:
     QRadioButton * choices_main[num_ch_m];
     QPushButton * redraw_but;
     QVector<QGraphicsRectItem *> qrects;
+    QLabel * max_val_lab;
+    QLabel * max_val_dis;
 public:
     SimpleCompPlayer * compplay;
 

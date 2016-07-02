@@ -17,7 +17,7 @@ QMAKE_CXXFLAGS_RELEASE += -O3 -march=native -mtune=native
 win32{
 #put in directory for boost here if I need
 #INCLUDEPATH += ../../../../Downloads/boost_1_56_0/boost_1_56_0
-INCLUDEPATH += "../../../Visual Studio 2013"
+INCLUDEPATH += "../../PythonProjects/"
 }
 unix{
 QMAKE_LFLAGS += -Wl,-rpath,/usr/local/lib64

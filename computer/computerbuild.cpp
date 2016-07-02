@@ -1,5 +1,5 @@
 #include "computerplayer.h"
-#include <RangeIterator.h>
+#include <headerlib/RangeIterator.h>
 #include "help/helpstuff.h"
 #include <memory>
 

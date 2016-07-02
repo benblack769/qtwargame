@@ -1,7 +1,7 @@
 #include "realplayer.h"
 #include "help/pointoperators.h"
 #include <algorithm>
-#include <RangeIterator.h>
+#include <headerlib/RangeIterator.h>
 #include <QMessageBox>
 #include <QInputDialog>
 #include "interface/screenhelp.h"

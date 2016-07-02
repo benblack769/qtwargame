@@ -1,10 +1,10 @@
 
 #include "computerplayer.h"
-#include <RangeIterator.h>
-#include <for_each_extend.hpp>
+#include <headerlib/RangeIterator.h>
+#include <headerlib/for_each_extend.hpp>
 #include <unordered_map>
 #include "help/helpstuff.h"
-#include <two_d_array.h>
+#include <headerlib/two_d_array.h>
 #include "help/iterfns.h"
 struct Path{
     Point P;

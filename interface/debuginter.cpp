@@ -7,7 +7,7 @@
 #include <QLabel>
 #include <QGraphicsRectItem>
 #include "interface/screenhelp.h"
-#include "RangeIterator.h"
+#include "headerlib/RangeIterator.h"
 #include "computerplayer.h"
 
 
@@ -30,6 +30,9 @@ DebugInter::DebugInter(QWidget *parent) :
     redraw_but = new QPushButton("reset",this);
     connect(redraw_but,&QPushButton::clicked,this,&DebugInter::print_stuff);
 
+    max_val_lab = new QLabel(tr("max of displayed values"),this);
+    max_val_dis = new QLabel(tr("filler"),this);
+
     init_layout();
     this->setLayout(lay);
 }
@@ -42,7 +45,10 @@ void DebugInter::init_layout(){
         lay->addWidget(choices[i],0,Qt::AlignTop);
     }
 
-    lay->addWidget(redraw_but,1,Qt::AlignTop);
+    lay->addWidget(redraw_but,0,Qt::AlignTop);
+
+    lay->addWidget(max_val_lab,0,Qt::AlignTop);
+    lay->addWidget(max_val_dis,1,Qt::AlignTop);
 }
 /*void DebugInter::clear_text(){
     for(QLabel * cl : choicelabs)
@@ -117,7 +123,7 @@ void DebugInter::DrawDebugData(Array2d<double> & Data){
         QColor C = D > 0 ? Qt::blue : Qt::black;
         DrawColorSquare(C, P, abs(D) / MaxD);
     }
-    //DrawDebugText(to_string(MaxD),0);
+    max_val_dis->setText(QString(to_string(MaxD).c_str()));
 }
 void DebugInter::DrawMacroMoveStuff(vector<DArray2d<TroopInfo<Array2d<double>>>> InData[4], int Spots[4]){
     if (InData[0].size() <= 0 || InData[0][0].dim1() <= 0 || InData[0][0][0].Size <= 0)

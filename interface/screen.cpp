@@ -7,7 +7,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 
-#include <RangeIterator.h>
+#include <headerlib/RangeIterator.h>
 #include "help/pointoperators.h"
 #include "help/helpstuff.h"
 
