@@ -1,5 +1,5 @@
 #pragma once
-#include "point.hpp"
+#include "headerlib/point.hpp"
 #include <inttypes.h>
 
 typedef unsigned int uint;

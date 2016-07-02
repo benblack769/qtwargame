@@ -131,7 +131,6 @@ CalcMoveProbs(M) :=
 
 main_calc():
 
-
 #Micro Move
 
 val_attack(0,T,MP,AP) > 0 #todo:list the actual initial value here

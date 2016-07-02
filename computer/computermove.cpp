@@ -1,8 +1,8 @@
 #include "computerplayer.h"
 #include "help/iterfns.h"
-#include <RangeIterator.h>
+#include <headerlib/RangeIterator.h>
 #include "help/helpstuff.h"
-#include <for_each_extend.hpp>
+#include <headerlib/for_each_extend.hpp>
 /*
 This file contains functions which help MoveTroop in doing the following actions:
 
@@ -223,21 +223,6 @@ void MakeAdjVals(GroupSquareVals & TVals, GroupSquareVals & AdjVals) {
         }
     }
 }
-//void MakeAdjVals(GroupSquareVals & TVals, GroupSquareVals & AdjVals){
-//	AdjVals = TVals;
-//	//Turns AdjVals into chance of being in the spot
-//	for (auto & TroopPair : AdjVals){
-//		MoveSquareVals & Vals = TroopPair.second;
-//		//AdjVals are being set using adjustments on their own values (remember they are copied from TVals)
-//		for (auto & MovePair : Vals){
-//			double Sum = sum(MovePair.Data->Arr);
-//			for (double & AttackVal : MovePair.Data->Arr){
-//
-//				//AttackVal = max(0.0, NewVal);//lowest value is zero
-//			}
-//		}
-//	}
-//}
 void SimpleCompPlayer::SubtractBlockingMoves(GroupSquareVals & TVals, int NumOfIters) {
     if (TVals.size() == 0)
         return;
@@ -292,114 +277,6 @@ void SimpleCompPlayer::SubtractBlockingMove(GroupSquareVals & TVals, GroupSquare
         }
     }
 }
-//Array2d<double> SimpleCompPlayer::GetGroupVals(Group * G){
-//	struct Path{
-//		Point P;
-//
-//		Path * LastPath;
-//		double CumVal;
-//
-//		Path * NextPath;
-//		double PathVal;
-//
-//		Path(){ LastPath = NULL; NextPath = NULL; CumVal = -10e50; PathVal = -10e50; }
-//		Path(Point InP,double AddVal, Path * InLastPath){
-//			P = InP;
-//			LastPath = InLastPath;
-//			CumVal = AddVal;
-//			NextPath = NULL;
-//			if (LastPath != NULL)
-//				CumVal += LastPath->CumVal;
-//		};
-//		void PushPath(vector<Point> & OutPath){
-//			OutPath.push_back(P);
-//			if (NextPath != NULL)
-//				NextPath->PushPath(OutPath);
-//		}
-//	};
-//	const int MaxRange = max(BoardSizeX, BoardSizeY);
-//	if (MoveRange == 0){
-//		throw "Getpaths doesn't work for range 0 troops!";
-//	}
-//	Array2d<int> SavedPlayerOcc = PlayerOcc;
-//	for (EPlayer * Play : AllPlayers){
-//		for (Troop * T : Play->Troops)
-//			if (T->MovementPoints > 0)
-//				PlayerOcc[T->Spot] = -1;
-//	}
-//
-//	vector<Array2d<Path>> Paths(MaxRange);//the paths are to their neighbors that led to them
-//	//sets the original point in the vector
-//	if (!BlankPoint(Start))
-//		throw "Start needs to be empty for GetPaths to work properly";
-//	/*
-//	This creates each new layer in a way that the next square looks back at the squares around it
-//	and finds the one with the greatest path so far. This way, each square is part of the best path it can
-//	be on.
-//	*/
-//	Paths[0][Start] = Path(Start,Vals[Start], NULL);
-//	for (int MoveNum : range(1,MaxRange)){
-//		Array2d<Path> & PrevPaths = Paths[MoveNum - 1];
-//		Array2d<Path> & CurPaths = Paths[MoveNum];
-//		double ValMoveAdjust = 1.0 / GetAdjRange(MoveNum,MoveRange);
-//		for (Point CurP:BoardIterate()){
-//			if (!BlankPoint(CurP))
-//				continue;
-//			Path * BestPrevPath = &PrevPaths[CurP];//sets an arbitrary starting point
-//			for (Point PrevP:SquareIterate(CurP, 1)){
-//				if (PrevPaths[PrevP].CumVal > BestPrevPath->CumVal)
-//					BestPrevPath = &PrevPaths[PrevP];
-//			}
-//			if (BestPrevPath->CumVal > -1000000.0)//if there is an active square that works
-//				CurPaths[CurP] = Path(CurP,Vals[CurP] * ValMoveAdjust,BestPrevPath);//CurPath is not yet initialized
-//		}
-//	}
-//	//sets the furthest outs PathVals (here , the PathVal == CumVal by definition)
-//	for (Path & LastPath : Paths[MaxRange-1]){
-//		LastPath.PathVal = LastPath.CumVal;
-//	}
-//	/*
-//	With the assumption that the furthest out PathVal will contain the best paths (which may be false)
-//	this goes through backwards to find the best path that it can link to
-//	*/
-//	for (int MoveNum : range(MaxRange - 1,0,-1)){
-//		Array2d<Path> & CurPaths = Paths[MoveNum - 1];
-//		Array2d<Path> & NextPaths = Paths[MoveNum];
-//		double ValMoveAdjust = 1.0 / GetAdjRange(MoveNum-1,MoveRange);//ValMoveAdjust is for the CurPaths
-//		for (Point CurP : BoardIterate()){
-//			if (!BlankPoint(CurP))
-//				continue;
-//			Path * BestNextPath = &NextPaths[CurP];//sets an arbitrary starting point
-//			for (Point NextP : SquareIterate(CurP, 1)){
-//				if (NextPaths[NextP].PathVal > BestNextPath->PathVal)
-//					BestNextPath = &NextPaths[NextP];
-//			}
-//			if (BestNextPath->LastPath != NULL || BestNextPath->P == Start){//if there is an active square that works
-//				Path & CurPath = CurPaths[CurP];
-//				CurPath.NextPath = BestNextPath;
-//				//Since the PathVal = the best ones added up, this takes the PathVal - BestOne + ThisOne to find the value of this path
-//				CurPath.PathVal = BestNextPath->PathVal - (BestNextPath->LastPath->CumVal - CurPath.CumVal);
-//			}
-//		}
-//	}
-//	//returns the useful values in a more sensible container, a blocked out 2d array around the MoveRange
-//	PartialRangeArray<ValInfo<vector<Point>>> PathVals(Start,MoveRange);
-//	Array2d<uint16_t> PathNums = FindMoveDistances(Start, MoveRange, MoveRange);
-//	for (int MoveNum : range(1,MoveRange + 1)){//interates up to and including the MoveRange,starting from 1
-//		Array2d<Path> & CurPaths = Paths[MoveNum];
-//		//iterates where the shortest path for this number of moves is
-//		for (Point MoveP : BoardIterate()){
-//			if (MoveNum != PathNums[MoveP])
-//				continue;
-//			PathVals.SetExist(MoveP, true);
-//			ValInfo<vector<Point>> & ThisVal = PathVals[MoveP];
-//			ThisVal.Val = CurPaths[MoveP].PathVal;
-//			CurPaths[MoveP].PushPath(ThisVal.Info);//ThisVal = the path
-//		}
-//	}
-//	PlayerOcc = SavedPlayerOcc;
-//	return PathVals;
-//}
 GroupSquareVals SimpleCompPlayer::GetValsOfGroupMove(Group * G) {
     //initlalizes the working parts of TVals and sets EnTroops
     set<Troop *> EnTroops;

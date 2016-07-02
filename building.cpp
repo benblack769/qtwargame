@@ -2,7 +2,7 @@
 #include "troop.h"
 #include <fstream>
 #include "help/helpstuff.h"
-#include <RangeIterator.h>
+#include <headerlib/RangeIterator.h>
 #include "interface/screenhelp.h"
 #include <QGraphicsItemGroup>
 

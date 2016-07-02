@@ -2,7 +2,7 @@
 #include <fstream>
 #include "realplayer.h"
 #include "computerplayer.h"
-#include <RangeIterator.h>
+#include <headerlib/RangeIterator.h>
 #include <cmath>
 #include "help/pointoperators.h"
 #include "help/iterfns.h"
