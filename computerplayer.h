@@ -28,24 +28,21 @@ struct MoveSquareVal{
 };
 typedef PartialRangeArray<MoveSquareVal>  MoveSquareVals;
 typedef map<Troop *, MoveSquareVals> GroupSquareVals;
-template<typename Ty>
-struct TroopInfo{
-    Troop * T;
-    int TeamNum;
-    int PlayerNum;
-    Ty Info;
+/*struct TroopInfo{
+    void * item;//does not own
+    TroopInfo(void * NON_OWNING_T_OR_B){
+        item = NON_OWNING_T_OR_B;
+    }
 };
-struct TroopInf{
-    Troop * T;
-    int TeamNum;
-    int PlayerNum;
-};
-template<typename Ty>
-struct BuildInfo{
-    Building * B;
-    int TeamNum;
-    Ty Info;
-};
+//allows TroopInfo to be resizeable
+namespace std{
+    template<>
+    struct hash<TroopInfo>{
+        size_t operator()(const TroopInfo & info)const{
+            return info.item;
+        }
+    };
+}*/
 struct SquareThreat{
     set<Troop *> ThreatTroops;
     int MaxAttack;
@@ -176,12 +173,12 @@ public:
     int GetValOfAttack(Point P, Troop * AttackTroop);
     void DetermineGroupActions();
 
-    PartialRangeArray<ValInfo<vector<Point>>> GetPaths(Point Start, int MoveRange, Array2d<double> Vals);
-    vector<TroopInfo<PartialRangeArray<ValInfo<vector<Point>>>>> GetInteractingPaths();
-    int CrudeGetDis(int Movement, Point StartP, Point EndP);//only works well if there is a clear path!!!!!!
-    Array2d<double> GetValuesOfTroopSquares(Troop * ThisT,Attach::AttachVals TroopAttachVals,Modifier Mod);
-    ValInfo<Point> GetBestAttackPoint(Point NewTroopP,Troop * AttackTroop);
-    void RemoveMoveableTroops();
+    //PartialRangeArray<ValInfo<vector<Point>>> GetPaths(Point Start, int MoveRange, Array2d<double> Vals);
+    //vector<TroopInfo<PartialRangeArray<ValInfo<vector<Point>>>>> GetInteractingPaths();
+    //int CrudeGetDis(int Movement, Point StartP, Point EndP);//only works well if there is a clear path!!!!!!
+    //Array2d<double> GetValuesOfTroopSquares(Troop * ThisT,Attach::AttachVals TroopAttachVals,Modifier Mod);
+    //ValInfo<Point> GetBestAttackPoint(Point NewTroopP,Troop * AttackTroop);
+    //void RemoveMoveableTroops();
 
     void SubtractBlockingMoves(GroupSquareVals & TVals, int NumOfIters);
     void SubtractBlockingMove(GroupSquareVals & TVals, GroupSquareVals & AdjVals);

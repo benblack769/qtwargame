@@ -115,6 +115,8 @@ void DebugInter::DrawDebugData(Array2d<double> & Data){
     for (double Info : Data)
         MaxD = max(MaxD, abs(Info));
 
+    max_val_dis->setText(QString(to_string(MaxD).c_str()));
+
     if(MaxD == 0)
         return;
 
@@ -123,7 +125,6 @@ void DebugInter::DrawDebugData(Array2d<double> & Data){
         QColor C = D > 0 ? Qt::blue : Qt::black;
         DrawColorSquare(C, P, abs(D) / MaxD);
     }
-    max_val_dis->setText(QString(to_string(MaxD).c_str()));
 }
 void DebugInter::DrawMacroMoveStuff(vector<DArray2d<TroopInfo<Array2d<double>>>> InData[4], int Spots[4]){
     if (InData[0].size() <= 0 || InData[0][0].dim1() <= 0 || InData[0][0][0].Size <= 0)

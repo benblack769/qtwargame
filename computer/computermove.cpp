@@ -342,7 +342,7 @@ void SimpleCompPlayer::MoveGroup(Group * MoveG) {
     GroupSquareVals TroopVals = GetValsOfGroupMove(MoveG);
 
     //second and nth iterations
-    SubtractBlockingMoves(TroopVals, 10);
+    //SubtractBlockingMoves(TroopVals, 10);
     double Val = 0;
     auto ProtectVal = Protect(Val);
     auto NewPV = std::move(ProtectVal);

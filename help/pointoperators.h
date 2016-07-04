@@ -26,7 +26,7 @@ struct BoardSquare{
         Cen = InCen;
         Range = InRange;
     }
-    //disallow equality to help ensure constness
+    //disallow assignment to help ensure constness
     void operator =(BoardSquare & Other) = delete;
 };
 using PItContainter = PIterContainter<BoardSizeX,BoardSizeY>;

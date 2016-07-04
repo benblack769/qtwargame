@@ -6,6 +6,180 @@
 #include "help/helpstuff.h"
 #include <headerlib/two_d_array.h>
 #include "help/iterfns.h"
+
+constexpr int MAX_MOVES = 10;
+constexpr int NUM_ITERS = 7;
+
+template<class iterator,class fn_ty>
+void WrapIter(iterator start,iterator begin,iterator end,fn_ty fn){
+    for_each(start,end,fn);
+    for_each(begin,start,fn);
+}
+vector<int> random_order(int first,int last){
+    vector<int> series(last - first);
+    for(int i = first; i < last; i++){
+        series[i] = i;
+    }
+    random_shuffle(series.begin(),series.end());
+    return series;
+}
+
+RangeArray<double> ShrinkArray2d(Array2d<double> arr,BoardSquare Sq){
+    RangeArray<double> res(Sq);
+    for(Point P : SquareIterate(Sq)){
+        res[P] = arr[P];
+    }
+    return res;
+}
+struct TBVals{
+    vector<Array2d<double>> troopvs;
+    vector<Array2d<double>> buildvs;
+};
+vector<vector<TBVals>> SimpleCompPlayer::ProbsInit(){
+    //creates probs andd assigns all to 0.0 or to 1.0 in the spot it is at in the initial move
+    vector<vector<TBVals>> probres = ValsInit(0.0);
+    vector<TBVals> & zeromove = probres[0];
+    for(int PlayN : range(AllPlayers.size())){
+        Player * Play = AllPlayers[PlayN];
+        TBVals & playvals = zeromove[PlayN];
+        for(int TN : random_order(0,Play->Troops.size())){
+            Troop * T = Play->Troops[TN];
+            playvals[TN][T->GetSpot()] = T->Hitpoints;
+        }
+        for(int BN : range(Play->Buildings.size())){
+            Building * B = Play->Buildings[BN];
+            for(Point BP : B->Place){
+                playvals[TN][BP] = 1.0;
+            }
+        }
+    }
+    return probres;
+}
+vector<vector<TBVals>> SimpleCompPlayer::ValsInit(double val){
+    //creates values and assigns all to 1.0
+    
+    vector<vector<TBVals>> res(MAX_MOVES);
+    for(vector<TBVals> & movevec : res){
+        for(int PlayN : range(AllPlayers.size())){
+            movevec[PlayN].troopvs.assign(AllPlayers[PlayN]->Troops.size(),Array2d<double>(val));
+            movevec[PlayN].troopvs.assign(AllPlayers[PlayN]->Buildings.size(),Array2d<double>(val));
+        }
+    }
+    return res;
+}
+void calc_probs(vector<vector<TBVals>> & AllVals,vector<vector<TBVals>> & AllProbs){
+    
+}
+void probs_to_square_pos_vals(vector<Array2d> & probs){
+    
+}
+
+vector<Array2d<double>> GetTroopMoveValVec(vector<vector<TBVals>> & AllItems,int PlayNum,int TNum){
+    //makes a vector of move items with troop num and play num fixed
+    vector<Array2d<double>> movevec(MAX_MOVES);
+    for(int M : range(MAX_MOVES)){
+        movevec[M] = AllItems[M][PlayNum].troopvs[TNum];
+    }
+    return movevec;
+}
+void place_val_vec_into(vector<vector<TBVals>> & AllItems,vector<Array2d> & val_vec){
+    //places vector of move items with troop num and play num fixed into all_items
+    for(int M : range(MAX_MOVES)){
+        AllItems[M][PlayNum].troopvs[TNum] = movevec[M];
+    }
+}
+
+vector<RangeArray<double>> SimpleCompPlayer::GetInteractingPaths(){
+    /*
+    starting with a constant value(of 1), the values of troop movement are calculated. The values divided by the
+    total value is taken to be the percentage chance of the troop being on that square. This is then used to affect the
+    chances of buildings being there there, of land being dominated by differnt troops, and of buildings existing. These
+    affectings are easily translated to be the values of the troop moving there. This is then taken to be the
+    */
+    //move,player,(Troop data,Building data)
+    
+    const double iter0val = 1.0;//arbitrary non-zero value
+    vector<vector<TBVals>> AllVals = ValsInit(iter0val);
+    
+    for(int Iter : range(NUM_ITERS)){
+        vector<vector<TBVals>> AllProbs = ProbsInit();
+        for(int Move : range(MAXMOVES)){
+            WrapIter(AllPlayers.begin() + this->PlayerNum,AllPlayers.begin(),AllPlayers.end(),[&](Player * Play){
+                //performs attacks (decreases on probabilty) on other players probabilty values as it calculates its own probabilties.
+                //note that final move will not be attacked in this way, so it will be flawed.
+                
+                // sequencial algorithm, troop ordering matters, but there is currently
+                // no ordering mechanism to optimize this process, so it is randomized to reduce impact on outcome
+                
+                for(int TN : random_order(0,Play->Troops.size())){
+                    
+                }
+                //ordering does not affect buildings, they can be done in any order
+                for(int BN : range(Play->Buildings.size())){
+                    
+                }
+            }); 
+        }
+        //order does not matter at all here.
+        for(Player * Play : AllPlayers){
+            for(int TN : range(Play->Troops.size())){
+                
+            }
+            for(int BN : range(Play->Buildings.size())){
+                
+            }
+        }
+    }
+    vector<Array2d<double>> my_tvals = AllVals[0][this->PlayerNum].buildvs;
+    vector<RangeArray<double>> retvals(my_tvals.size());
+    for(int TN : range(my_tvals.size())){
+        Troop * T = Troops[TN];
+        retvals[TN] = ShrinkArray2d(my_tvals,BoardSquare(T->GetSpot(),T->MovementPoints));
+    }
+    return retvals;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 struct Path{
     Point P;
 
@@ -728,3 +902,4 @@ vector<TroopInfo<PartialRangeArray<ValInfo<vector<Point>>>>> SimpleCompPlayer::G
     }
     return RetVals;
 }
+

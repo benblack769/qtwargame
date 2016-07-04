@@ -71,6 +71,11 @@ Ty sum(const vector<Ty> & Vec){
 }
 template<typename VecType, typename PointerType>
 inline int PointerToNum(const VecType & V,PointerType Ptr){
+    /*
+     * V is a vector of unique values.
+     * Ptr is a value in that vector
+     * returns integer index to that value
+    */
     int Size = V.size();
     for (int g = 0; g < Size; g++){
         if (V[g] == Ptr)
