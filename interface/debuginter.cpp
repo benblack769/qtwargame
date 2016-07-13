@@ -40,7 +40,7 @@ void DebugInter::init_layout(){
     for (QRadioButton * cm : choices_main)
         lay->addWidget(cm,0,Qt::AlignTop);
     //breaking it up necessary to get it all at the top like it is
-    for(int i : range(num_ch)){
+    for(int i : range(NUM_VARS)){
         lay->addWidget(choicelabs[i],0,Qt::AlignTop);
         lay->addWidget(choices[i],0,Qt::AlignTop);
     }
@@ -50,38 +50,40 @@ void DebugInter::init_layout(){
     lay->addWidget(max_val_lab,0,Qt::AlignTop);
     lay->addWidget(max_val_dis,1,Qt::AlignTop);
 }
-/*void DebugInter::clear_text(){
+void DebugInter::make_unused(){
     for(QLabel * cl : choicelabs)
-        cl->setText(QString());
-}*/
+        cl->setText(QString("unused"));
+}
 void DebugInter::toggle_micromoves(bool clicked){
     if(clicked){
+        make_unused();
         choicelabs[0]->setText(QString("num of iters"));
         choicelabs[1]->setText(QString("num of troops"));
         choicelabs[2]->setText(QString("move location/attackinfo/moveinfo/otherstuff"));
-        choicelabs[3]->setText(QString("unused"));
     }
 }
 void DebugInter::toggle_macromoves(bool clicked){
     if(clicked){
-        choicelabs[0]->setText(QString("TP/NextTP/SpreadTPaths/RawTPaths"));
+        make_unused();
+        choicelabs[0]->setText(QString("Vals/probs"));
         choicelabs[1]->setText(QString("iteration"));
         choicelabs[2]->setText(QString("move num"));
-        choicelabs[3]->setText(QString("troop num"));
+        choicelabs[3]->setText(QString("player num"));
+        choicelabs[4]->setText(QString("build/troop"));
+        choicelabs[5]->setText(QString("bt num"));
     }
 }
 void DebugInter::toggle_macrobuild(bool clicked){
     if(clicked){
+        make_unused();
         choicelabs[0]->setText(QString("num of iters"));
         choicelabs[1]->setText(QString("move num"));
-        choicelabs[2]->setText(QString("unused"));
-        choicelabs[3]->setText(QString("unused"));
     }
 }
 void DebugInter::print_stuff(){
     clear_qrects();
-    int ch_ints[num_ch];
-    for(int i : range(num_ch)){
+    int ch_ints[NUM_VARS];
+    for(int i : range(NUM_VARS)){
         ch_ints[i] = choices[i]->value();
     }
     if(choices_main[0]->isChecked())
@@ -126,19 +128,32 @@ void DebugInter::DrawDebugData(Array2d<double> & Data){
         DrawColorSquare(C, P, abs(D) / MaxD);
     }
 }
-void DebugInter::DrawMacroMoveStuff(vector<DArray2d<TroopInfo<Array2d<double>>>> InData[4], int Spots[4]){
-    if (InData[0].size() <= 0 || InData[0][0].dim1() <= 0 || InData[0][0][0].Size <= 0)
+void DebugInter::DrawMacroMoveStuff(macro_debug_info & InData, int Spots[5]){
+    if(Spots[0] >= 2)
         return;
-    int Sizes[4];
-    Sizes[0] = 4;
-    Sizes[1] = InData[0].size();
-    Sizes[2] = InData[0][0].dim1();
-    Sizes[3] = InData[0][0][0].Size;
-
-    if (IsInScope(Sizes,Spots,4))
-        DrawDebugData(InData[Spots[0]][Spots[1]][Spots[2]][Spots[3]].Info);
-
-    //DrawPoints(Sizes,Spots,4);
+    
+    vector<vector<vector<TBVals>>> & rel_data = *(InData.probvals+Spots[0]);
+    if(Spots[1] >= rel_data.size())
+        return;
+    
+    vector<vector<TBVals>> & iter_data = rel_data[Spots[1]];
+    if(Spots[2] >= iter_data.size())
+        return;
+    
+    vector<TBVals> & move_data = iter_data[Spots[2]];
+    if(Spots[3] >= move_data.size())
+        return;
+    
+    TBVals & tb_data = move_data[Spots[3]];
+    if(Spots[4] >= 2)
+        return;
+    
+    vector<Array2d<double>> & t_or_b_data = *(Spots[4] == 0 ? &(tb_data.troopvs) : &(tb_data.buildvs));
+    
+    if(Spots[5] >= t_or_b_data.size())
+        return;
+    
+    DrawDebugData(t_or_b_data[Spots[5]]);
 }
 void DebugInter::DrawMacroMoveBuild(DArray2d<Array2d<double>> & BData, int Spots[2]){
     if (BData.Data.size() == 0)
@@ -148,7 +163,6 @@ void DebugInter::DrawMacroMoveBuild(DArray2d<Array2d<double>> & BData, int Spots
     if (IsInScope(Sizes,Spots,2)){
         DrawDebugData(BData[Spots[0]][Spots[1]]);
     }
-    //DrawPoints(Sizes,Spots,2);
 }
 void DebugInter::DrawMicroMoveStuff(vector<vector<MoveSquareVals>> & MData, int Spots[4]){
     if (MData.size() == 0 || MData[0].size() == 0 || MData[0][0].Size() == 0)
@@ -175,6 +189,5 @@ void DebugInter::DrawMicroMoveStuff(vector<vector<MoveSquareVals>> & MData, int 
         }
         DrawDebugData(Vals);
     }
-   // DrawPoints(Sizes, Spots, Size);
 }
 #endif

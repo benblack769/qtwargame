@@ -66,8 +66,8 @@ MoveToVal(T,0,P) = NetValModifier(T,0,P)
 #represents the total value of the optimal path of the troop both forwards and backwards in time assuming being on a point at move M
 MovePathVal(T,MaxM,P) = MoveToVal(T,MaxM,P)
 	| MovePathVal(T,M,P) =
-		(max_of( MovePathVal(T,M+1,P), P)
-				for P in square_range(P,1))
+		(max_of( MovePathVal(T,M+1,NextP))
+				for NextP in square_range(P,1))
 			- (MoveToVal(T,M+1,P) - NetValModifier(T,M+1,P)) #the value of the best child move of M+1 (>= MoveToVal(T,M,P))
 			+ MoveToVal(T,M,P)
 

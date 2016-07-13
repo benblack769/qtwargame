@@ -24,7 +24,7 @@ constexpr int MaximumDomination = 2000000;
 //#define ShowSubtractEffect
 //#define DrawMacroPath
 
-//#define Debug_Macro_Move
+#define Debug_Macro_Move
 
 #ifdef Debug_Macro_Move
 constexpr int DEBUG_MACRO_WIDTH = 30;

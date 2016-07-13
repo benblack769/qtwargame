@@ -9,6 +9,7 @@
 
 constexpr int MAX_MOVES = 10;
 constexpr int NUM_ITERS = 7;
+constexpr double MIN_VALUE = 0.0;
 
 template<class iterator,class fn_ty>
 void WrapIter(iterator start,iterator begin,iterator end,fn_ty fn){
@@ -24,17 +25,13 @@ vector<int> random_order(int first,int last){
     return series;
 }
 
-RangeArray<double> ShrinkArray2d(Array2d<double> arr,BoardSquare Sq){
+RangeArray<double> ShrinkArray2d(Array2d<double> & arr,BoardSquare Sq){
     RangeArray<double> res(Sq);
     for(Point P : SquareIterate(Sq)){
         res[P] = arr[P];
     }
     return res;
 }
-struct TBVals{
-    vector<Array2d<double>> troopvs;
-    vector<Array2d<double>> buildvs;
-};
 vector<vector<TBVals>> SimpleCompPlayer::ProbsInit(){
     //creates probs andd assigns all to 0.0 or to 1.0 in the spot it is at in the initial move
     vector<vector<TBVals>> probres = ValsInit(0.0);
@@ -44,12 +41,12 @@ vector<vector<TBVals>> SimpleCompPlayer::ProbsInit(){
         TBVals & playvals = zeromove[PlayN];
         for(int TN : random_order(0,Play->Troops.size())){
             Troop * T = Play->Troops[TN];
-            playvals[TN][T->GetSpot()] = T->Hitpoints;
+            playvals.troopvs[TN][T->GetSpot()] = T->Hitpoints;
         }
         for(int BN : range(Play->Buildings.size())){
             Building * B = Play->Buildings[BN];
             for(Point BP : B->Place){
-                playvals[TN][BP] = 1.0;
+                playvals.buildvs[BN][BP] = 1.0;
             }
         }
     }
@@ -60,20 +57,51 @@ vector<vector<TBVals>> SimpleCompPlayer::ValsInit(double val){
     
     vector<vector<TBVals>> res(MAX_MOVES);
     for(vector<TBVals> & movevec : res){
+        movevec.resize(AllPlayers.size());
         for(int PlayN : range(AllPlayers.size())){
             movevec[PlayN].troopvs.assign(AllPlayers[PlayN]->Troops.size(),Array2d<double>(val));
-            movevec[PlayN].troopvs.assign(AllPlayers[PlayN]->Buildings.size(),Array2d<double>(val));
+            movevec[PlayN].buildvs.assign(AllPlayers[PlayN]->Buildings.size(),Array2d<double>(val));
         }
     }
     return res;
 }
-void calc_probs(vector<vector<TBVals>> & AllVals,vector<vector<TBVals>> & AllProbs){
-    
+void probs_to_pos_vals(vector<Array2d<double>> & probs){
+    //ensure that pos_vals never exceed 0 where the thing cannot move
+    //this may mean changing ValInit.
+    for(Array2d<double> & arr : probs){
+        //????
+    }
 }
-void probs_to_square_pos_vals(vector<Array2d> & probs){
+void calc_future_vals(vector<Array2d<double>> & pos_vals,vector<Array2d<double>> & future_vals,int MoveRange){
+    vector<Array2d<double>> move_to_val(MAX_MOVES,MIN_VALUE);
+    future_vals.resize(MAX_MOVES);
     
+    move_to_val[0] = pos_vals[0];
+    for(int M : range(1,MAX_MOVES)){
+        for(Point CurP : BoardIterate()){
+            double max_v = MIN_VALUE;
+            for(Point PrevP : SquareIterate(CurP,MoveRange)){
+                max_v = max(max_v,move_to_val[M-1][PrevP]);
+            }
+            move_to_val[M][CurP] = max_v + pos_vals[M][CurP];
+        }
+    }
+    vector<Array2d<double>> move_path_val(MAX_MOVES,MIN_VALUE);
+    move_path_val[MAX_MOVES-1] = move_to_val[MAX_MOVES-1];
+    future_vals[MAX_MOVES-1] = pos_vals[MAX_MOVES-1];
+    
+    for(int M : range(MAX_MOVES-2,-1,-1)){
+        for(Point CurP : BoardIterate()){
+            double max_v = MIN_VALUE;
+            for(Point NextP : SquareIterate(CurP,MoveRange)){
+                max_v = max(max_v,move_path_val[M+1][NextP]);
+            }
+            move_path_val[M][CurP] = max_v - (move_to_val[M+1][CurP] - pos_vals[M+1][CurP]) + move_to_val[M][CurP];
+            
+            future_vals[M][CurP] = move_path_val[M][CurP] + pos_vals[M][CurP] -  move_to_val[M][CurP];
+        }
+    }
 }
-
 vector<Array2d<double>> GetTroopMoveValVec(vector<vector<TBVals>> & AllItems,int PlayNum,int TNum){
     //makes a vector of move items with troop num and play num fixed
     vector<Array2d<double>> movevec(MAX_MOVES);
@@ -82,13 +110,12 @@ vector<Array2d<double>> GetTroopMoveValVec(vector<vector<TBVals>> & AllItems,int
     }
     return movevec;
 }
-void place_val_vec_into(vector<vector<TBVals>> & AllItems,vector<Array2d> & val_vec){
+void place_val_vec_into(vector<vector<TBVals>> & AllItems,vector<Array2d<double>> & val_vec,int PlayNum,int TNum){
     //places vector of move items with troop num and play num fixed into all_items
     for(int M : range(MAX_MOVES)){
-        AllItems[M][PlayNum].troopvs[TNum] = movevec[M];
+        AllItems[M][PlayNum].troopvs[TNum] = val_vec[M];
     }
 }
-
 vector<RangeArray<double>> SimpleCompPlayer::GetInteractingPaths(){
     /*
     starting with a constant value(of 1), the values of troop movement are calculated. The values divided by the
@@ -103,7 +130,7 @@ vector<RangeArray<double>> SimpleCompPlayer::GetInteractingPaths(){
     
     for(int Iter : range(NUM_ITERS)){
         vector<vector<TBVals>> AllProbs = ProbsInit();
-        for(int Move : range(MAXMOVES)){
+        for(int Move : range(MAX_MOVES)){
             WrapIter(AllPlayers.begin() + this->PlayerNum,AllPlayers.begin(),AllPlayers.end(),[&](Player * Play){
                 //performs attacks (decreases on probabilty) on other players probabilty values as it calculates its own probabilties.
                 //note that final move will not be attacked in this way, so it will be flawed.
@@ -120,48 +147,34 @@ vector<RangeArray<double>> SimpleCompPlayer::GetInteractingPaths(){
                 }
             }); 
         }
+        #ifdef Debug_Macro_Move 
+        VecTVals.probvals[0].push_back(AllProbs);
+        VecTVals.probvals[1].push_back(AllProbs);
+        #endif
+        //calculates next iteration's values from old values and probabilities
+        //vector<vector<TBVals>> OldVals = AllVals;
         //order does not matter at all here.
         for(Player * Play : AllPlayers){
             for(int TN : range(Play->Troops.size())){
-                
+                vector<Array2d<double>> pos_vals = GetTroopMoveValVec(AllProbs,Play->PlayerNum,TN);
+                probs_to_pos_vals(pos_vals);
+                vector<Array2d<double>> future_vals;
+                calc_future_vals(pos_vals,future_vals,Play->Troops[TN]->MovementPoints);
+                place_val_vec_into(AllVals,future_vals,Play->PlayerNum,TN);
             }
             for(int BN : range(Play->Buildings.size())){
                 
             }
         }
     }
-    vector<Array2d<double>> my_tvals = AllVals[0][this->PlayerNum].buildvs;
+    vector<Array2d<double>> my_tvals = AllVals[0][this->PlayerNum].troopvs;
     vector<RangeArray<double>> retvals(my_tvals.size());
     for(int TN : range(my_tvals.size())){
         Troop * T = Troops[TN];
-        retvals[TN] = ShrinkArray2d(my_tvals,BoardSquare(T->GetSpot(),T->MovementPoints));
+        retvals[TN] = ShrinkArray2d(my_tvals[TN],BoardSquare(T->GetSpot(),T->MovementPoints));
     }
     return retvals;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -204,14 +217,6 @@ struct Path{
             NextPath->PushPath(OutPath);
     }
 };
-template<typename Ty>
-TroopInfo<Ty> MakeTInfo(Troop * T,int TeamNum,int PlayerNum,Ty Info){
-    return{ T,TeamNum,PlayerNum, Info };
-}
-template<typename Ty>
-BuildInfo<Ty> MakeBInfo(Building * B, int TeamNum, int PlayerNum, Ty & Info){
-    return{ B, TeamNum, PlayerNum, Info };
-}
 int GetAdjRange(int PlaceNum, int MoveRange){
     return PlaceNum == 0 ? 1 : (PlaceNum + MoveRange - 1) / MoveRange;
 }
@@ -507,399 +512,3 @@ void MakePathVals(vector<Array2d<double> *> & InVals, vector<Array2d<double> *> 
         });
     }
 }
-Array2d<double> SpreadVals(Array2d<double> & Vals){
-    double TotVal = 0;
-    for (double & Val : Vals)
-        TotVal += (Val <= 0) ?
-                    0 :
-                    Val;
-
-    Array2d<double> Spread;
-    if (TotVal > 0){
-        //multiplication is faster than division optimization
-        double InvTotVal = 1.0 / TotVal;
-        for_each_range(Spread, Vals, [&](double & SVal, double & Val){
-            SVal = (Val <= 0) ?
-                    0 :
-                    (Val * InvTotVal);
-        });
-    }
-    return Spread;
-}
-Array2d<double> EjectValsFromLand(TroopInfo<Array2d<double>> & TChance, Array2d<Domination> & PlayerDom, vector<EPlayer *> & AllPlayers, SimpleCompPlayer * This){
-    //changes the land and returns the value of that change
-    Array2d<double> Vals(0);
-    unordered_map<EPlayer *, double> LandValue(AllPlayers.size());
-    for (EPlayer * Play : AllPlayers)
-        LandValue[Play] = GetValOfDom(Play);
-
-    for (Point P : BoardIterate()){
-        Domination & Dom = PlayerDom[P];
-        double ThisLandVal =
-            (Dom.Influence == MaximumDomination && Dom.Player > 0) ?
-                    (OnSameTeam(This, AllPlayers[Dom.Player])) ?
-                    0 :
-                LandValue[AllPlayers[Dom.Player]] + LandValue[This] :
-            LandValue[This];
-
-        int AttackRange = TChance.T->Range;
-        double TotalDomChange = 0;
-        for (Point AP : SquareIterate(P, AttackRange)){
-            double ThisChance = TChance.Info[AP];
-            double ThisInfluence = GetDominationOfTroop(AttackRange, GetBoardDistance(P, AP));
-            //increases the value of the spot that can change this value
-            Vals[AP] += ThisChance * ThisLandVal * ThisInfluence / MaximumDomination;
-            //changes the domination of the spot based on influence and chance
-            TotalDomChange += ThisChance * ThisInfluence;
-        }
-        //finalizes domination change
-        int DirectionalDomChange = TotalDomChange * ((Dom.Player == TChance.PlayerNum) ? 1 : -1);
-        Dom.Influence = max(Dom.Influence + DirectionalDomChange, MaximumDomination);
-    }
-    return Vals;
-}
-Array2d<double> EjectValsFromBuildChances(Array2d<BuildInfo<double>> & BChance, TroopInfo<Array2d<double>> & TChance){
-    //this takes the maximum value a building each TChance can attack and removes some of the BChance away
-    //this function promotes drift!!! (some values become better than others because of position on an arbitrary iterator)
-    //does not take into account blocking of other buildings right now, although that isn't really pressing
-    if (TChance.T->TAttackType != TroopAndBuild)
-        return Array2d<double>(0);
-    Array2d<double> AdjBVals;
-    for_each_range(BChance, AdjBVals, [&](BuildInfo<double> & BInf, double & BVal){
-        BVal = (BInf.TeamNum == TChance.TeamNum || BInf.B == NULL) ?
-            0 :
-            ((BInf.Info * BInf.B->GetCost()) / BInf.B->GetSize());
-    });
-    Array2d<double> Vals(0);
-    for (Point BP : BoardIterate()){
-        double TCh = TChance.Info[BP];
-        PointVal MaxVal(0,BP);
-        for (Point P : SquareIterate(BP, TChance.T->Range)){
-            double CurVal = AdjBVals[P];
-            if (CurVal > MaxVal.Val)
-                MaxVal = PointVal(CurVal, P);
-        }
-        if (MaxVal.Val < 0)
-            continue;
-        double ValOfChange = MaxVal.Val * TCh;
-        //this is what is causing drift, but getting rid of it will lead to illogical stuff too
-        AdjBVals[MaxVal.Info] = min(AdjBVals[MaxVal.Info] - ValOfChange, 0.0);
-        //changes the raw chances
-        BChance[MaxVal.Info].Info = min(BChance[MaxVal.Info].Info - TCh,0.0);
-        //change the output values
-        Vals[BP] = ValOfChange;
-    }
-    return Vals;
-}
-typedef TroopInfo<Array2d<double>> TroopChance;
-typedef TroopInfo<Array2d<double>> TroopValues;
-struct ValChance{
-    double Val;
-    double Chance;
-};
-typedef Array2d<vector<TroopInfo<ValChance>>> TroopCollection;
-typedef DArraySlice<TroopInfo<Array2d<double>>> TChanceCollection;
-typedef BuildInfo<double> BuildVal;
-void Iterfeer(TroopChance & Att, TroopChance & Def, TroopValues & AVals, TroopValues & DVals,TroopValues & RawDVals){
-    /*
-    this troop affects the values of all of the other troops by taking the chance the offender will be in range with
-    the defender, getting the estimated chance that the offender will beat the defender, getting the value of the
-    defender, which is the value of the troop plus the value of the changes already in FutVals, and then subtracting
-    the resulting value from the defensive vals and adding the value to the offensive vals
-    */
-    if (Att.TeamNum == Def.TeamNum)//if they are on the same team, they won't attack each other
-        return;
-    double Chance = GetChanceToWin(Att.T, Def.T);
-    int DefaultDefVal = Def.T->GetValue();
-    //at this point This is in the form of values as in money and Affect is in the form of probability of existence
-    for (Point P : BoardIterate()){
-        double & AC = Att.Info[P];
-        double & DC = Def.Info[P];
-        if (AC > 1e-10 && DC > 1e-10){
-            double TotDefVal = DefaultDefVal + RawDVals.Info[P];//todo:fix this so that it represents actual values of future movements instead of this really weak value
-            double AltVal = Chance * TotDefVal * AC * DC;
-            //optimizes by taking out multiplication from indicies access
-            FastCoordSquareIter(P, Att.T->Range, [&](int X, int Y){
-                AVals.Info.Arr[X][Y] += AltVal;
-                DVals.Info.Arr[X][Y] -= AltVal;
-            });
-        }
-    }
-}
-void Iterfeer(TChanceCollection Chance, TChanceCollection OutVals, TChanceCollection SpotVals){
-    /*
-    this troop affects the values of all of the other troops by taking the chance the offender will be in range with
-    the defender, getting the estimated chance that the offender will beat the defender, getting the value of the
-    defender, which is the value of the troop plus the value of the changes already in FutVals, and then subtracting
-    the resulting value from the defensive vals and adding the value to the offensive vals
-    */
-    for (int AtNum : range(Chance.Size)){
-        auto & AInfo = Chance[AtNum];
-        auto & ASpotVal = SpotVals[AtNum];
-        auto & AOutVal = OutVals[AtNum];
-        for (Point P : BoardIterate()){
-            double AC = AInfo.Info[P];
-            Troop * AttT = AInfo.T;
-            if (AC <= 0)
-                continue;
-            ValInfo<int> BestDef;
-            for (int DefNum : range(Chance.Size)){
-                if (AInfo.TeamNum == Chance[DefNum].TeamNum)
-                    continue;
-                Troop * DefT = Chance[DefNum].T;
-                double DBaseVal = DefT->GetValue();
-                double TotVal = 0;
-                for (Point AP : SquareIterate(P, AttT->Range)){
-                    //it can only subtract
-                    //todo: explore getting rid of base val and only using the accumulated value of the troop
-                    TotVal += Chance[DefNum].Info[AP] * (SpotVals[DefNum].Info[AP] + DBaseVal);
-                }
-                double WinChance = GetChanceToWin(AttT, DefT);
-                double TotDefVal = TotVal * WinChance;
-                if (TotDefVal > BestDef.Val)
-                    BestDef = ValInfo<int>(TotDefVal, DefNum);
-            }
-            if (BestDef.Val <= 0)
-                continue;
-
-            auto & DInfo = Chance[BestDef.Info];
-            auto & DSpotVal = SpotVals[BestDef.Info];
-            auto & DOutVal = OutVals[BestDef.Info];
-            Troop * DefT = DInfo.T;
-
-            double WinChance = GetChanceToWin(AttT, DefT);
-            double DBaseVal = DefT->GetValue();
-            double ChanceToRemove = AC * WinChance;
-            for (Point AP : SquareIterate(P, AInfo.T->Range)){
-                //chance to remove times chance it is there, times value of troop
-                double ChangeVal = ChanceToRemove * DInfo.Info[AP] * (DBaseVal + DSpotVal.Info[AP]);
-                AOutVal.Info[AP] += ChangeVal;
-                DOutVal.Info[AP] -= ChangeVal;
-            }
-        }
-    }
-}
-void Iterfeer(TChanceCollection Chance, TChanceCollection OutVals, TChanceCollection SpotVals, Array2d<BuildInfo<double>> & BChance){
-    /*
-    the OutVals and BChance are affected by taking the chance of the attacker, dividing it so that the maximum effect of attacking something is
-    one and making
-    */
-
-    for (int AtNum : range(Chance.Size)){
-        TroopChance & AInfo = Chance[AtNum];
-        TroopValues & ASpotVal = SpotVals[AtNum];
-        TroopValues & AOutVal = OutVals[AtNum];
-        for (Point P : BoardIterate()){
-            double AC = AInfo.Info[P];
-            Troop * AttT = AInfo.T;
-            if (AC <= 0)
-                continue;
-            double AllTotDefChance = 0;
-            //adds in the chance of buildings being there and getting attacked
-            if (AttT->TAttackType == TroopAndBuild){
-                for (Point AP : SquareIterate(P, AttT->Range)){
-                    BuildVal & BCha = BChance[AP];
-                    if (BCha.TeamNum != AInfo.TeamNum && BCha.B != NULL)
-                        AllTotDefChance += BCha.Info;
-                }
-            }
-            for (int DefNum : range(Chance.Size)){
-                TroopChance & DefChance = Chance[DefNum];
-
-                if (AInfo.TeamNum == DefChance.TeamNum)
-                    continue;
-
-                double TotDefChance = 0;
-                for (Point AP : SquareIterate(P, AttT->Range))
-                    TotDefChance += DefChance.Info[AP];
-
-                AllTotDefChance += TotDefChance * GetChanceToWin(AttT, DefChance.T);
-            }
-            if (AllTotDefChance <= 0)
-                continue;
-            /*the ChanceModifier makes sure that the total amount of damage the attacking troop inflicts cannot exceed 1
-            troop per turn.*/
-            double ChanceModifier = min(1.0, 1.0 / AllTotDefChance);
-
-            if (AttT->TAttackType == TroopAndBuild){
-                double BuildChanceToRemove = AC * ChanceModifier;
-                for (Point AP : SquareIterate(P, AttT->Range)){
-                    BuildVal & BCha = BChance[AP];
-                    if (BCha.TeamNum != AInfo.TeamNum && BCha.B != NULL){
-                        double BuildVal = double(BCha.B->GetCost()) / BCha.B->GetSize();
-                        AOutVal.Info[AP] += BuildVal * BCha.Info * BuildChanceToRemove;
-                        BCha.Info -= BuildChanceToRemove;
-                    }
-                }
-            }
-            for (int DefNum : range(Chance.Size)){
-                TroopChance & DefChance = Chance[DefNum];
-                TroopValues & DSpotVal = SpotVals[DefNum];
-                TroopValues & DOutVal = OutVals[DefNum];
-                Troop * DefT = DefChance.T;
-
-                if (AInfo.TeamNum == DefChance.TeamNum)
-                    continue;
-
-                double DBaseVal = DefT->GetValue();
-
-                double ChanceToRemove = AC * ChanceModifier * GetChanceToWin(AttT, DefT);
-
-                for (Point AP : SquareIterate(P, AttT->Range)){
-                    //chance to remove times chance it is there, times value of troop
-                    double DC = DefChance.Info[AP];
-                    if (DC > 0){
-                        double TotDefVal = DBaseVal + DSpotVal.Info[AP];
-                        double ChangeVal = ChanceToRemove * DC * TotDefVal;
-                        AOutVal.Info[AP] += ChangeVal;
-                        DOutVal.Info[AP] -= ChangeVal;
-                    }
-                }
-            }
-        }
-    }
-}
-vector<TroopInfo<PartialRangeArray<ValInfo<vector<Point>>>>> SimpleCompPlayer::GetInteractingPaths(){
-    /*
-    starting with a constant value(of 1), the values of troop movement are calculated. The values divided by the
-    total value is taken to be the percentage chance of the troop being on that square. This is then used to affect the
-    chances of buildings being there there, of land being dominated by differnt troops, and of buildings existing. These
-    affectings are easily translated to be the values of the troop moving there. This is then taken to be the
-    */
-    const int MaxMoves = 10;
-    const int NumOfIters = 7;
-#ifdef Debug_Macro_Move
-    for (int g : range(4))
-        VecTVals[g].resize(NumOfIters);
-    VecBVals.resize_w_loss(NumOfIters, MaxMoves);
-#endif
-    ProtectedGlobal<Array2d<int>> Protectkey(PlayerOcc);
-    //removes the spots of the moveable troops of all of the players
-    for (Player * Play : AllPlayers){
-        for (Troop * T : Play->Troops){
-            if (T->MovementPoints > 0)
-                PlayerOcc[T->GetSpot()] = -1;
-        }
-    }
-    //gets the total number of troops on the board
-    int TroopSize = 0;
-    for (EPlayer * Play : AllPlayers)
-        TroopSize += Play->Troops.size();
-    DArray2d<TroopInfo<Array2d<double>>> TPVals(MaxMoves, TroopSize), RawTPaths, SpreadTPaths, NextTPVals;
-    //TPVals.		resize_w_loss(MaxMoves, TroopSize);
-    /*RawTPaths.	resize_w_loss(MaxMoves, TroopSize);
-    NextTPVals.	resize_w_loss(MaxMoves, TroopSize);
-    SpreadTPaths.resize_w_loss(MaxMoves, TroopSize);*/
-
-    //initializes the PathVals, the troops are ordered by thier turn, so that overlapping effects work closer to real life
-    {
-        int TNum = 0;
-        for (int g : range(AllPlayers.size())){
-            int PNum = (g + PlayerNum) % AllPlayers.size();
-            EPlayer * Play = AllPlayers[PNum];
-            for (Troop * T : Play->Troops){
-                Array2d<double> DefVals(1);
-                for (int M : range(MaxMoves)){
-                    TPVals[M][TNum] = MakeTInfo(T, Play->TeamNum, Play->PlayerNum, DefVals);
-                }
-                TNum += 1;
-            }
-        }
-    }
-    RawTPaths = SpreadTPaths = NextTPVals = TPVals;
-
-    for (int Iter : range(NumOfIters)){
-        //at this point the values are stored in TPVals. Here they are converted into likelyhood of placement and put into TPaths
-        for (int TNum : range(TroopSize)){
-            vector<Array2d<double> *> PathVec(MaxMoves);
-            vector<Array2d<double> *> ValVec(MaxMoves);
-            for (int MoveNum : range(MaxMoves)){
-                ValVec[MoveNum] = &TPVals[MoveNum][TNum].Info;
-                PathVec[MoveNum] = &RawTPaths[MoveNum][TNum].Info;
-            }
-            Troop * T = RawTPaths[0][TNum].T;
-            MakePathVals(ValVec, PathVec, T->GetSpot(), T->MovementPoints, MaxMoves);
-        }
-
-        Array2d<Domination> FutureDom = PlayerDom;
-        Array2d<BuildInfo<double>> BuildChance;
-        //initialized BuildChance to 1 for all places with buildings
-        for (Point P : BoardIterate()){
-            BuildChance[P] = (GetOccType(P) == BuildingType) ?
-                BuildInfo<double>{GetBuilding(P), GetPlayer(P)->TeamNum, 1.0} :
-                BuildInfo<double>{ NULL, -1, 0.0 };
-        }
-
-        //puts values into NextTPathVals
-        for (int MoveNum : range(MaxMoves)){
-            for (int TNum : range(TroopSize)){
-                auto & TPath = SpreadTPaths[MoveNum][TNum];
-                TPath.Info = SpreadVals(RawTPaths[MoveNum][TNum].Info);
-                auto & FutVals = NextTPVals[MoveNum][TNum];
-                FutVals.Info.Init(0);
-
-                //the values of the troop affecting the land/buildings are recorded in FutVals and simeltaniouly changed
-                //then the values are decreased so that later troops/turns don't benefit from the same values of changes
-                FutVals.Info += EjectValsFromLand(TPath, FutureDom, AllPlayers, this);
-                //put this in buildstuff
-                FutVals.Info += EjectValsFromBuildChances(BuildChance, TPath);
-            }
-            //for (int TNum : range(TroopSize)){
-            //	for (int DefTNum : range(TroopSize)){
-            //		//this also takes into account defending other troops (if you have gotten around to implementing path value recording!)
-            //		Iterfeer(SpreadTPaths[MoveNum][TNum], SpreadTPaths[MoveNum][DefTNum],
-            //			NextTPVals[MoveNum][TNum], NextTPVals[MoveNum][DefTNum],
-            //			RawTPaths[MoveNum][DefTNum]);
-            //	}
-            //}
-            //put buildchances in here as well and incorperate it into the same system.
-            Iterfeer(SpreadTPaths[MoveNum], NextTPVals[MoveNum], RawTPaths[MoveNum]);
-            for (int TNum : range(TroopSize)){
-                //averages the current/future path values with the previous path values
-                NextTPVals[MoveNum][TNum].Info += TPVals[MoveNum][TNum].Info;
-                NextTPVals[MoveNum][TNum].Info *= Array2d<double>(0.5);//TPVals is the sum of two vals and so must be divided by 2, or multiplied by 0.5
-            }
-#ifdef Debug_Macro_Move
-            for (Point P : BoardIterate())
-                VecBVals[Iter][MoveNum][P] = BuildChance[P].Info;
-#endif
-        }
-#ifdef Debug_Macro_Move
-        VecTVals[0][Iter] = TPVals;
-        VecTVals[1][Iter] = NextTPVals;
-        VecTVals[2][Iter] = SpreadTPaths;
-        VecTVals[3][Iter] = RawTPaths;
-#endif
-        TPVals = NextTPVals;
-    }
-    //the values are still stored in NextTPathVals, now we need to convert them to paths and then to MovePaths
-    vector<TroopInfo<PartialRangeArray<ValInfo<vector<Point>>>>> RetVals(Troops.size());
-    for (int TNum : range(Troops.size())){//this players troops should be the the first troops up to Troops.size()
-        vector<Array2d<double> *> ValPtrs(MaxMoves);
-        for (int MoveNum : range(MaxMoves)){
-            ValPtrs[MoveNum] = &TPVals[MoveNum][TNum].Info;
-        }
-        TroopInfo<Array2d<double>> & TInf = TPVals[0][TNum];
-        BoardSquare TSq(TInf.T->GetSpot(), TInf.T->MovementPoints);
-        vector<Array2d<Path>> Spread(MaxMoves * TInf.T->MovementPoints);
-        Point Start = TInf.T->GetSpot();
-        int MoveRange = TInf.T->MovementPoints;
-        int Futures = MaxMoves * MoveRange;
-        Futures -= (Futures - 1) % MoveRange;
-        Spread[0][Start] = Path(Start, (*ValPtrs[0])[Start], NULL);
-
-        for (int SM : range(1, Futures)){
-            int M = RoundUpRatio(SM, MoveRange);
-            AttachPrevPaths(Spread[SM - 1], Spread[SM], 1.0, *ValPtrs[M]);//has constant value over movenum
-        }
-        for (Path & LastPath : Spread[Futures - 1]){
-            LastPath.PathVal = LastPath.CumVal;
-        }
-        for (int SM : range(Futures - 1, 0, -1)){
-            AttachCurPaths(Spread[SM - 1], Spread[SM], Start);//has constant value over movenum
-        }
-        RetVals[TNum] = MakeTInfo(TInf.T, TInf.TeamNum, TInf.PlayerNum, ConvertToMovePaths(Spread,TSq.Cen,TSq.Range));
-    }
-    return RetVals;
-}
-

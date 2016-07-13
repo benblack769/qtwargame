@@ -314,12 +314,12 @@ GroupSquareVals SimpleCompPlayer::GetValsOfGroupMove(Group * G) {
     auto AllPathVals = GetInteractingPaths();
     int TNum = 0;
     for (Troop * MyTroop : G->Troops) {
-        auto TPathVals = AllPathVals[TNum].Info;
+        auto TPathVals = AllPathVals[TNum];
         TNum += 1;
         for (auto MovePair : TVals[MyTroop]) {
             Point MoveP = MovePair.P;
 
-            double MoveVal = (TPathVals[MoveP].Val / 1000.0);//starts out with macro val/1000 because it is totally too high right now
+            double MoveVal = (TPathVals[MoveP] / 1000.0);//starts out with macro val/1000 because it is totally too high right now
                                                              //subtracts the value of being killed
             MovePair.Info().MoveV = MoveVal;
             //for (Troop * EnT : Threat[MoveP].ThreatTroops)

@@ -17,12 +17,12 @@ class DebugInter : public QWidget
 {
     Q_OBJECT
 protected:
-    static constexpr size_t num_ch = 4;
-    static constexpr size_t num_ch_m = 3;
+    static constexpr size_t NUM_VARS = 6;
+    static constexpr size_t NUM_DEB_INFO = 3;
     QVBoxLayout * lay;
-    QLabel * choicelabs[num_ch];
-    QSpinBox * choices[num_ch];
-    QRadioButton * choices_main[num_ch_m];
+    QLabel * choicelabs[NUM_VARS];
+    QSpinBox * choices[NUM_VARS];
+    QRadioButton * choices_main[NUM_DEB_INFO];
     QPushButton * redraw_but;
     QVector<QGraphicsRectItem *> qrects;
     QLabel * max_val_lab;
@@ -35,11 +35,11 @@ protected:
     void init_layout();
     void DrawDebugData(Array2d<double> & Data);
     void DrawColorSquare(QColor c, Point P, qreal opacity);
-    void DrawMacroMoveStuff(vector<DArray2d<TroopInfo<Array2d<double>>>> InData[4], int Spots[4]);
+    void DrawMacroMoveStuff(macro_debug_info & InData, int Spots[4]);
     void DrawMacroMoveBuild(DArray2d<Array2d<double>> & BData, int Spots[2]);
     void DrawMicroMoveStuff(vector<vector<MoveSquareVals>> & MData, int Spots[4]);
     void clear_qrects();
-    //void clear_text();
+    void make_unused();
 signals:
 
 public slots:
