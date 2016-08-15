@@ -7,9 +7,10 @@
 #include <headerlib/for_each_extend.hpp>
 #include <QMessageBox>
 #include "base.h"
+#include <headerlib/protect_global.hpp>
 
-Array2d<int> PlayerOcc;
-Array2d<Domination> PlayerDom;
+BoardArray<int> PlayerOcc;
+BoardArray<Domination> PlayerDom;
 
 TInfo::TroopTypes GetTroopType(BuildingTypes Build){
     switch (Build){
@@ -128,8 +129,8 @@ void Player::Save(ofstream & File){
     File.write((char *)(&PlayerNum),sizeof(PlayerNum));
     File.write((char *)(&MiniTurn),sizeof(MiniTurn));
     File.write((char *)(&CurrentTurn),sizeof(CurrentTurn));
-    File.write((char*)(&NPlayerMap),NPlayerMap.Size());
-    File.write((char*)(&TPlayerMap), TPlayerMap.Size());
+    File.write((char*)(&NPlayerMap),NPlayerMap.size());
+    File.write((char*)(&TPlayerMap), TPlayerMap.size());
 
     for(Troop * T:Troops){
         File.write((char *)(&T->ThisType), sizeof(T->ThisType));
@@ -153,8 +154,8 @@ void Player::Load(ifstream & File){
     File.read((char *)(&PlayerNum),sizeof(PlayerNum));
     File.read((char *)(&MiniTurn),sizeof(MiniTurn));
     File.read((char *)(&CurrentTurn),sizeof(CurrentTurn));
-    File.read((char*)(&NPlayerMap),NPlayerMap.Size());
-    File.read((char*)(&TPlayerMap), TPlayerMap.Size());
+    File.read((char*)(&NPlayerMap),NPlayerMap.size());
+    File.read((char*)(&TPlayerMap), TPlayerMap.size());
 
     for(Troop *& T:Troops){
         TInfo::TroopTypes ThisType;
@@ -186,7 +187,7 @@ void Player::StartNew(){
 
     Money = MoneyResetVal;
     MiniTurn = 0;
-    TPlayerMap.Init(Nothing);
+    TPlayerMap.assign(Nothing);
 }
 void Player::RemoveThingCompletely(BaseType ThingType,int Item){
     auto KnockDown = [&]() {
@@ -376,7 +377,7 @@ Building * Player::GetMyBuild(Point P){
         return NULL;
 };
 bool Player::AttemptAttackOnOthers(int TroopNum,Point Loc){
-    if(BlankPoint(Loc) || PlayerOcc[Loc.X][Loc.Y] == PlayerNum)
+    if(BlankPoint(Loc) || PlayerOcc[Loc.Y][Loc.X] == PlayerNum)
         return false;
     Troop * CurTroop = Troops[TroopNum];
     if(CurTroop->HaveAttacked)
@@ -713,7 +714,7 @@ bool Player::GetPath(vector<Point> & OutPath,Point Start, Point End, int MaxRang
         OutPath.push_back(Start);
         return true;
     }
-    Array2d<bool> HasPassed(false);
+    BoardArray<bool> HasPassed(false);
     struct Path{
         Point P;
         Path * LastPath;

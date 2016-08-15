@@ -2,6 +2,7 @@
 #include "help/iterfns.h"
 #include <headerlib/RangeIterator.h>
 #include "help/helpstuff.h"
+#include <headerlib/protect_global.hpp>
 #include <headerlib/for_each_extend.hpp>
 /*
 This file contains functions which help MoveTroop in doing the following actions:
@@ -54,7 +55,7 @@ void SimpleCompPlayer::IterOverMoveAttack(Troop * T, Fnc FIter) {
         });
     });
 }
-int GetSpread(Troop * T, Point Spot, int OverRange, Array2d<SquareThreat> & MyThreat) {
+int GetSpread(Troop * T, Point Spot, int OverRange, BoardArray<SquareThreat> & MyThreat) {
     int Spread = 0;
     for (Point P : SquareIterate(Spot, OverRange))
         if (MyThreat[P].ThreatTroops.count(T))//if the troop is threatening that square is there
@@ -297,7 +298,7 @@ GroupSquareVals SimpleCompPlayer::GetValsOfGroupMove(Group * G) {
                                            //inserts troops that can attack our troops when they move here
             InsertSet(EnTroops, Threat[MoveP].ThreatTroops);
 
-            BoardSquare MoveSquare(MoveP, MyTroop->Range);
+            ConstSquare MoveSquare(MoveP, MyTroop->Range);
             AttackSquareVals & AttackVals = MoveVals[MoveP].AttackV;
             AttackVals = RangeArray<double>(MoveSquare);
 

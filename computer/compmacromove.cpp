@@ -6,6 +6,7 @@
 #include "help/helpstuff.h"
 #include <headerlib/two_d_array.h>
 #include "help/iterfns.h"
+#include <headerlib/protect_global.hpp>
 
 constexpr int MAX_MOVES = 10;
 constexpr int NUM_ITERS = 7;
@@ -25,7 +26,7 @@ vector<int> random_order(int first,int last){
     return series;
 }
 
-RangeArray<double> ShrinkArray2d(Array2d<double> & arr,BoardSquare Sq){
+RangeArray<double> ShrinkArray2d(BoardArray<double> & arr,ConstSquare Sq){
     RangeArray<double> res(Sq);
     for(Point P : SquareIterate(Sq)){
         res[P] = arr[P];
@@ -59,21 +60,21 @@ vector<vector<TBVals>> SimpleCompPlayer::ValsInit(double val){
     for(vector<TBVals> & movevec : res){
         movevec.resize(AllPlayers.size());
         for(int PlayN : range(AllPlayers.size())){
-            movevec[PlayN].troopvs.assign(AllPlayers[PlayN]->Troops.size(),Array2d<double>(val));
-            movevec[PlayN].buildvs.assign(AllPlayers[PlayN]->Buildings.size(),Array2d<double>(val));
+            movevec[PlayN].troopvs.assign(AllPlayers[PlayN]->Troops.size(),BoardArray<double>(val));
+            movevec[PlayN].buildvs.assign(AllPlayers[PlayN]->Buildings.size(),BoardArray<double>(val));
         }
     }
     return res;
 }
-void probs_to_pos_vals(vector<Array2d<double>> & probs){
+void probs_to_pos_vals(vector<BoardArray<double>> & probs){
     //ensure that pos_vals never exceed 0 where the thing cannot move
     //this may mean changing ValInit.
-    for(Array2d<double> & arr : probs){
+    for(BoardArray<double> & arr : probs){
         //????
     }
 }
-void calc_future_vals(vector<Array2d<double>> & pos_vals,vector<Array2d<double>> & future_vals,int MoveRange){
-    vector<Array2d<double>> move_to_val(MAX_MOVES,MIN_VALUE);
+void calc_future_vals(vector<BoardArray<double>> & pos_vals,vector<BoardArray<double>> & future_vals,int MoveRange){
+    vector<BoardArray<double>> move_to_val(MAX_MOVES,MIN_VALUE);
     future_vals.resize(MAX_MOVES);
     
     move_to_val[0] = pos_vals[0];
@@ -86,7 +87,7 @@ void calc_future_vals(vector<Array2d<double>> & pos_vals,vector<Array2d<double>>
             move_to_val[M][CurP] = max_v + pos_vals[M][CurP];
         }
     }
-    vector<Array2d<double>> move_path_val(MAX_MOVES,MIN_VALUE);
+    vector<BoardArray<double>> move_path_val(MAX_MOVES,MIN_VALUE);
     move_path_val[MAX_MOVES-1] = move_to_val[MAX_MOVES-1];
     future_vals[MAX_MOVES-1] = pos_vals[MAX_MOVES-1];
     
@@ -102,15 +103,15 @@ void calc_future_vals(vector<Array2d<double>> & pos_vals,vector<Array2d<double>>
         }
     }
 }
-vector<Array2d<double>> GetTroopMoveValVec(vector<vector<TBVals>> & AllItems,int PlayNum,int TNum){
+vector<BoardArray<double>> GetTroopMoveValVec(vector<vector<TBVals>> & AllItems,int PlayNum,int TNum){
     //makes a vector of move items with troop num and play num fixed
-    vector<Array2d<double>> movevec(MAX_MOVES);
+    vector<BoardArray<double>> movevec(MAX_MOVES);
     for(int M : range(MAX_MOVES)){
         movevec[M] = AllItems[M][PlayNum].troopvs[TNum];
     }
     return movevec;
 }
-void place_val_vec_into(vector<vector<TBVals>> & AllItems,vector<Array2d<double>> & val_vec,int PlayNum,int TNum){
+void place_val_vec_into(vector<vector<TBVals>> & AllItems,vector<BoardArray<double>> & val_vec,int PlayNum,int TNum){
     //places vector of move items with troop num and play num fixed into all_items
     for(int M : range(MAX_MOVES)){
         AllItems[M][PlayNum].troopvs[TNum] = val_vec[M];
@@ -156,9 +157,9 @@ vector<RangeArray<double>> SimpleCompPlayer::GetInteractingPaths(){
         //order does not matter at all here.
         for(Player * Play : AllPlayers){
             for(int TN : range(Play->Troops.size())){
-                vector<Array2d<double>> pos_vals = GetTroopMoveValVec(AllProbs,Play->PlayerNum,TN);
+                vector<BoardArray<double>> pos_vals = GetTroopMoveValVec(AllProbs,Play->PlayerNum,TN);
                 probs_to_pos_vals(pos_vals);
-                vector<Array2d<double>> future_vals;
+                vector<BoardArray<double>> future_vals;
                 calc_future_vals(pos_vals,future_vals,Play->Troops[TN]->MovementPoints);
                 place_val_vec_into(AllVals,future_vals,Play->PlayerNum,TN);
             }
@@ -167,11 +168,11 @@ vector<RangeArray<double>> SimpleCompPlayer::GetInteractingPaths(){
             }
         }
     }
-    vector<Array2d<double>> my_tvals = AllVals[0][this->PlayerNum].troopvs;
+    vector<BoardArray<double>> my_tvals = AllVals[0][this->PlayerNum].troopvs;
     vector<RangeArray<double>> retvals(my_tvals.size());
     for(int TN : range(my_tvals.size())){
         Troop * T = Troops[TN];
-        retvals[TN] = ShrinkArray2d(my_tvals[TN],BoardSquare(T->GetSpot(),T->MovementPoints));
+        retvals[TN] = ShrinkArray2d(my_tvals[TN],ConstSquare(T->GetSpot(),T->MovementPoints));
     }
     return retvals;
 }
@@ -223,8 +224,8 @@ int GetAdjRange(int PlaceNum, int MoveRange){
 double GetValMoveAdjust(int MoveNum){
     return 1.0 / Square(MoveNum);
 }
-Array2d<double> SimpleCompPlayer::GetValuesOfTroopSquares(Troop * ThisT, Attach::AttachVals TroopAttachVals, Modifier Mod){
-    Array2d<double> Vals(0);
+BoardArray<double> SimpleCompPlayer::GetValuesOfTroopSquares(Troop * ThisT, Attach::AttachVals TroopAttachVals, Modifier Mod){
+    BoardArray<double> Vals(0);
     int Range = ThisT->Range;
 
     auto AddValToRange = [&](double AddVal, Point P, int Range){
@@ -356,13 +357,13 @@ double GetChanceToWin(Troop * Attack, Troop * Defend){
     double DefWin = GetOneSidedChanceToWin(Defend, Attack);
     return AttackWin / (AttackWin + DefWin);
 }
-void AffectTroopVals(Array2d<double> & TVals, Troop * Attack,Troop * Defend){
+void AffectTroopVals(BoardArray<double> & TVals, Troop * Attack,Troop * Defend){
     //here TVals is associated with Attack
 
 }
-Array2d<uint16_t> FindMoveDistances(Point Start, int MoveRange, int StopDis){
+BoardArray<uint16_t> FindMoveDistances(Point Start, int MoveRange, int StopDis){
     //This section makes an Array2d that represents the Board in terms of the minimum number of moves it takes to get to each square
-    Array2d<uint16_t> ShortMoves(uint16_t(0));
+    BoardArray<uint16_t> ShortMoves(uint16_t(0));
 
     vector<Point> CurSpots;
     vector<Point> PrevSpots;
@@ -388,7 +389,7 @@ Array2d<uint16_t> FindMoveDistances(Point Start, int MoveRange, int StopDis){
     }
     return ShortMoves;
 }
-void AttachPrevPaths(Array2d<Path> & PrevPaths, Array2d<Path> & CurPaths, double ValMoveAdjust,Array2d<double> & Vals){
+void AttachPrevPaths(BoardArray<Path> & PrevPaths, BoardArray<Path> & CurPaths, double ValMoveAdjust,BoardArray<double> & Vals){
     for (Point CurP : BoardIterate()){
         if (!BlankPoint(CurP))
             continue;
@@ -401,7 +402,7 @@ void AttachPrevPaths(Array2d<Path> & PrevPaths, Array2d<Path> & CurPaths, double
             CurPaths[CurP] = Path(CurP, Vals[CurP] * ValMoveAdjust, BestPrevPath);//CurPath is not yet initialized
     }
 }
-void AttachCurPaths(Array2d<Path> & CurPaths, Array2d<Path> & NextPaths,Point Start){
+void AttachCurPaths(BoardArray<Path> & CurPaths, BoardArray<Path> & NextPaths,Point Start){
     for (Point CurP : BoardIterate()){
         if (!BlankPoint(CurP))
             continue;
@@ -418,14 +419,14 @@ void AttachCurPaths(Array2d<Path> & CurPaths, Array2d<Path> & NextPaths,Point St
         }
     }
 }
-PartialRangeArray<ValInfo<vector<Point>>> ConvertToMovePaths(vector<Array2d<Path>> & Paths, Point Start, int MoveRange){
+PartialRangeArray<ValInfo<vector<Point>>> ConvertToMovePaths(vector<BoardArray<Path>> & Paths, Point Start, int MoveRange){
     //returns the useful values in a more sensible container, a blocked out 2d array around the MoveRange
     PartialRangeArray<ValInfo<vector<Point>>> PathVals(Start, MoveRange);
 
-    Array2d<uint16_t> PathNums = FindMoveDistances(Start, MoveRange, MoveRange);
+    BoardArray<uint16_t> PathNums = FindMoveDistances(Start, MoveRange, MoveRange);
 
     int MoveNum = MoveRange;
-    Array2d<Path> & MovePaths = Paths[MoveNum];
+    BoardArray<Path> & MovePaths = Paths[MoveNum];
     for (Point MoveP : BoardIterate()){
         if (PathNums[MoveP] <= 0)
             continue;
@@ -444,7 +445,7 @@ void SimpleCompPlayer::RemoveMoveableTroops(){
             if (T->MovementPoints > 0)
                 PlayerOcc[T->GetSpot()] = -1;
 }
-PartialRangeArray<ValInfo<vector<Point>>> SimpleCompPlayer::GetPaths(Point Start, int MoveRange,Array2d<double> Vals){
+PartialRangeArray<ValInfo<vector<Point>>> SimpleCompPlayer::GetPaths(Point Start, int MoveRange,BoardArray<double> Vals){
 
     const int MaxRange = max(BoardSizeX, BoardSizeY);
     const int MaxMoves = RoundUpRatio(MaxRange, MoveRange);
@@ -458,7 +459,7 @@ PartialRangeArray<ValInfo<vector<Point>>> SimpleCompPlayer::GetPaths(Point Start
     if (!BlankPoint(Start))
         throw "Start needs to be empty for GetPaths to work properly";
 
-    vector<Array2d<Path>> Paths(MaxRange);//the paths are to their neighbors that led to them
+    vector<BoardArray<Path>> Paths(MaxRange);//the paths are to their neighbors that led to them
 
     /*
     This creates each new layer in a way that the next square looks back at the squares around it
@@ -487,9 +488,9 @@ PartialRangeArray<ValInfo<vector<Point>>> SimpleCompPlayer::GetPaths(Point Start
     return RetVal;
 }
 
-void MakePathVals(vector<Array2d<double> *> & InVals, vector<Array2d<double> *> & OutVals, Point Start, int MoveRange, int Moves){
+void MakePathVals(vector<BoardArray<double> *> & InVals, vector<BoardArray<double> *> & OutVals, Point Start, int MoveRange, int Moves){
     int Futures = (Moves - 1) * MoveRange + 1;//so that rounding up never gets passed the last movevector<Array2d<Path>> Paths(Moves * MoveRange);
-    vector<Array2d<Path>> Paths(Futures);
+    vector<BoardArray<Path>> Paths(Futures);
 
     Paths[0][Start] = Path(Start, (*InVals[0])[Start], NULL);
 

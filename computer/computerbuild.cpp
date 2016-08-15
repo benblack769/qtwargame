@@ -2,6 +2,7 @@
 #include <headerlib/RangeIterator.h>
 #include "help/helpstuff.h"
 #include <memory>
+#include <headerlib/protect_global.hpp> 
 
 double TroopBuyRatios(TInfo::TroopTypes TType){
     using namespace TInfo;
@@ -110,10 +111,10 @@ void SimpleCompPlayer::RemoveThingCompletely(BaseType ThingType, int Item){
     }
 }
 //these functions find the highest value of their type(OutValue), their apropriate refrence numbers(BuildNum) and whether they are avaliable at all or not
-Array2d<double> SimpleCompPlayer::GetDefaultTSqVals(Troop * T){
+BoardArray<double> SimpleCompPlayer::GetDefaultTSqVals(Troop * T){
     return GetValuesOfTroopSquares(T, Attach::AttachVals(), Modifier{ 1.0, 1.0, 1.0, 1.0 });
 }
-double SimpleCompPlayer::GetDefaultBuyValue(Troop * T,const Array2d<double> & Values){
+double SimpleCompPlayer::GetDefaultBuyValue(Troop * T,const BoardArray<double> & Values){
     auto ProtectKey = Protect(PlayerOcc[T->GetSpot()]);
     PlayerOcc[T->GetSpot()] = -1;
     return max(GetPaths(T->GetSpot(), T->MovementPoints, Values).Arr).Val;
@@ -200,7 +201,7 @@ ValInfo<BuildingTypes> SimpleCompPlayer::FindBestBuildType(bool TroopCountNotMet
     return Value.GetBest();
 }
 pair<Point,Point> SimpleCompPlayer::FindBestBuildSpot(BuildingTypes Build){
-    Array2d<double> BoardValues(0);
+    BoardArray<double> BoardValues(0);
 
     int XAdd, YAdd;
     int Size = GetBuildingSize(Build);
@@ -298,7 +299,7 @@ triple<double,Point,Building *> SimpleCompPlayer::FindBestTroopSpot(TInfo::Troop
     BuildingTypes NeedBuild = GetBuildType(TType);
     unique_ptr<Troop> SimTroop(MakeNewTroop(TType, CreatePoint(0, 0)));
     SimTroop->ResetStats();
-    Array2d<double> TVals = GetValuesOfTroopSquares(SimTroop.get(), TInfo::GetDefaultAttachVals(SimTroop->ThisType), Modifier{ 1.0,1.0, 1.0, 1.0 });
+    BoardArray<double> TVals = GetValuesOfTroopSquares(SimTroop.get(), TInfo::GetDefaultAttachVals(SimTroop->ThisType), Modifier{ 1.0,1.0, 1.0, 1.0 });
     PointVal Best;
     for (Building * B : Buildings){
         if (B->Type == NeedBuild){

@@ -112,7 +112,7 @@ bool IsInScope(int Sizes[], int Spots[], int Size){
             return false;
     return true;
 }
-void DebugInter::DrawDebugData(Array2d<double> & Data){
+void DebugInter::DrawDebugData(BoardArray<double> & Data){
     double MaxD = 0;
     for (double Info : Data)
         MaxD = max(MaxD, abs(Info));
@@ -148,14 +148,14 @@ void DebugInter::DrawMacroMoveStuff(macro_debug_info & InData, int Spots[5]){
     if(Spots[4] >= 2)
         return;
     
-    vector<Array2d<double>> & t_or_b_data = *(Spots[4] == 0 ? &(tb_data.troopvs) : &(tb_data.buildvs));
+    vector<BoardArray<double>> & t_or_b_data = *(Spots[4] == 0 ? &(tb_data.troopvs) : &(tb_data.buildvs));
     
     if(Spots[5] >= t_or_b_data.size())
         return;
     
     DrawDebugData(t_or_b_data[Spots[5]]);
 }
-void DebugInter::DrawMacroMoveBuild(DArray2d<Array2d<double>> & BData, int Spots[2]){
+void DebugInter::DrawMacroMoveBuild(DArray2d<BoardArray<double>> & BData, int Spots[2]){
     if (BData.Data.size() == 0)
         return;
     int Sizes[2] = { BData.dim1(), BData.dim2() };
@@ -170,7 +170,7 @@ void DebugInter::DrawMicroMoveStuff(vector<vector<MoveSquareVals>> & MData, int 
     const int Size = 3;
     int Sizes[Size] = { MData.size(), MData[0].size(), MData[0][0].Size() + 3};
     if (IsInScope(Sizes, Spots, Size)){
-        Array2d<double> Vals(0);
+        BoardArray<double> Vals(0);
         if (Spots[2] == Sizes[2] - 1) {
             for (auto MPair : MData[Spots[0]][Spots[1]])
                 Vals[MPair.P] = MPair.Info().MoveV + max(MPair.Info().AttackV.Arr);

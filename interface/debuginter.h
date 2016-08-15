@@ -33,10 +33,10 @@ public:
     explicit DebugInter(QWidget *parent = 0);
 protected:
     void init_layout();
-    void DrawDebugData(Array2d<double> & Data);
+    void DrawDebugData(BoardArray<double> & Data);
     void DrawColorSquare(QColor c, Point P, qreal opacity);
     void DrawMacroMoveStuff(macro_debug_info & InData, int Spots[4]);
-    void DrawMacroMoveBuild(DArray2d<Array2d<double>> & BData, int Spots[2]);
+    void DrawMacroMoveBuild(DArray2d<BoardArray<double>> & BData, int Spots[2]);
     void DrawMicroMoveStuff(vector<vector<MoveSquareVals>> & MData, int Spots[4]);
     void clear_qrects();
     void make_unused();

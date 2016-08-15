@@ -116,7 +116,7 @@ bool Building::DestroyedAfterAttack(Point Loc,Troop * AttackingTroop){
 bool Building::AttemptAttack(Troop * AttackingTroop){
     return (AttackingTroop->TAttackType == TroopAndBuild);
 }
-void Building::IterOverBuildFromDis(Array2d<int> & PlayerOcc,int DistanceFromBuild, function<void(Point)> IterFunc){
+void Building::IterOverBuildFromDis(BoardArray<int> & PlayerOcc,int DistanceFromBuild, function<void(Point)> IterFunc){
     Point Cen = GetAvPoint();
     //gets the maximum distance from the average point(not necessarily an actual part of the building!)
     int MaxDis = 0;

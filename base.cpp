@@ -20,8 +20,8 @@ void SaveGameInfo(string FileName){
     ofstream SaveFile(FileName, ios::binary);
     //global variables PlayerTurn
     SaveFile.write((char*)(&PlayerTurn), sizeof(PlayerTurn));
-    SaveFile.write((char*)(&PlayerOcc), PlayerOcc.Size());
-    SaveFile.write((char*)(&PlayerDom), PlayerDom.Size());
+    SaveFile.write((char*)(&PlayerOcc), PlayerOcc.size());
+    SaveFile.write((char*)(&PlayerDom), PlayerDom.size());
     int NumOfPlayers = Players.size();
     SaveFile.write((char*)(&NumOfPlayers), sizeof(NumOfPlayers));
     for (Player * P : Players){
@@ -35,8 +35,8 @@ bool LoadGameInfo(string FileName){
     }
     //global variables
     SaveFile.read((char*)(&PlayerTurn), sizeof(PlayerTurn));//makes it a single char value, possibly incorrect
-    SaveFile.read((char*)(&PlayerOcc), PlayerOcc.Size());
-    SaveFile.read((char*)(&PlayerDom), PlayerDom.Size());
+    SaveFile.read((char*)(&PlayerOcc), PlayerOcc.size());
+    SaveFile.read((char*)(&PlayerDom), PlayerDom.size());
     int NumOfPlayers;
     SaveFile.read((char*)(&NumOfPlayers), sizeof(NumOfPlayers));
     Players.resize(NumOfPlayers);
@@ -53,8 +53,8 @@ void ResetGame(){
     for (Player * Play : Players)
         Play->StartNew();
 
-    PlayerOcc.Init(-1);
-    PlayerDom.Init(Domination{ -1, 0 });
+    PlayerOcc.assign(-1);
+    PlayerDom.assign(Domination{ -1, 0 });
 
     int XMinDisAway = BoardSizeX / (sqrt(NumOfPlayers) + 1);
     int YMinDisAway = BoardSizeY / (sqrt(NumOfPlayers) + 1);

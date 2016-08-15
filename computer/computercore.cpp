@@ -227,8 +227,8 @@ void SimpleCompPlayer::GetPPaths(){
         FriendPaths.push_back(Vector(this->Center,Play->Center));
 }
 void SimpleCompPlayer::GetThreat(){
-    Threat.Init(SquareThreat( {}, 0, 0, 0 ));
-    FutureThreat.Init(SquareThreat( {}, 0, 0, 0 ));
+    Threat.assign(SquareThreat( {}, 0, 0, 0 ));
+    FutureThreat.assign(SquareThreat( {}, 0, 0, 0 ));
 
     for(EPlayer * Play:Enemies){
         for(Troop * T: Play->Troops){
@@ -249,7 +249,7 @@ void SimpleCompPlayer::ShowOnScreen(){
 }
 #endif
 void SimpleCompPlayer::GetAntiThreat(){
-    AntiThreat.Init(SquareThreat( {}, 0, 0, 0 ));
+    AntiThreat.assign(SquareThreat( {}, 0, 0, 0 ));
 
     for(Troop * T: this->Troops){
         for (Point AttackP : SquareIterate(T->GetSpot(), T->GetMoveAttackRange())){

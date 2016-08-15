@@ -44,8 +44,8 @@ namespace std{
     };
 }*/
 struct TBVals{
-    vector<Array2d<double>> troopvs;
-    vector<Array2d<double>> buildvs;
+    vector<BoardArray<double>> troopvs;
+    vector<BoardArray<double>> buildvs;
 };
 struct SquareThreat{
     set<Troop *> ThreatTroops;
@@ -113,13 +113,13 @@ public:
     SimpleCompPlayer(Player * Play);
 #ifdef Debug_Macro_Move
     macro_debug_info VecTVals;
-    DArray2d<Array2d<double>> VecBVals;
+    DArray2d<BoardArray<double>> VecBVals;
     vector<vector<MoveSquareVals>> VecMVals;
     virtual void ShowOnScreen();
 #endif
-    Array2d<SquareThreat> Threat;//the threat enemy groups have on this group
-    Array2d<SquareThreat> FutureThreat;//Futurethreat stacks up threat for FutureMovesAhead and ignores bariers
-    Array2d<SquareThreat> AntiThreat;//the threat this groups troops have on enemy groups
+    BoardArray<SquareThreat> Threat;//the threat enemy groups have on this group
+    BoardArray<SquareThreat> FutureThreat;//Futurethreat stacks up threat for FutureMovesAhead and ignores bariers
+    BoardArray<SquareThreat> AntiThreat;//the threat this groups troops have on enemy groups
     vector<int> TroopGroup;// this is a representation of what group each troop is in
     vector<Group *> Groups;
     vector<EPlayer *> AllPlayers;//all of the players are deep copied into here by placeplayers
@@ -167,8 +167,8 @@ public:
     void InteleBuild();
     void ClearBoardOfGroup(Group * G);
     void RestoreGroupToBoard(Group * G);
-    double GetDefaultBuyValue(Troop * T,const Array2d<double> & Values);
-    Array2d<double> GetDefaultTSqVals(Troop * T);
+    double GetDefaultBuyValue(Troop * T,const BoardArray<double> & Values);
+    BoardArray<double> GetDefaultTSqVals(Troop * T);
     double GetValOfTroopWithAttach(Troop * T, Attach::Attachment Attc);
     ValInfo<pair<Troop *,Attach::Attachment>> FindBestSolierAttachValueAndNum();
     ValInfo<BuildingTypes> FindBestBuildType(bool TroopCountNotMet);
@@ -183,10 +183,10 @@ public:
     int GetValOfAttack(Point P, Troop * AttackTroop);
     void DetermineGroupActions();
 
-    PartialRangeArray<ValInfo<vector<Point>>> GetPaths(Point Start, int MoveRange, Array2d<double> Vals);
+    PartialRangeArray<ValInfo<vector<Point>>> GetPaths(Point Start, int MoveRange, BoardArray<double> Vals);
     //vector<TroopInfo<PartialRangeArray<ValInfo<vector<Point>>>>> GetInteractingPaths();
     int CrudeGetDis(int Movement, Point StartP, Point EndP);//only works well if there is a clear path!!!!!!
-    Array2d<double> GetValuesOfTroopSquares(Troop * ThisT,Attach::AttachVals TroopAttachVals,Modifier Mod);
+    BoardArray<double> GetValuesOfTroopSquares(Troop * ThisT,Attach::AttachVals TroopAttachVals,Modifier Mod);
     ValInfo<Point> GetBestAttackPoint(Point NewTroopP,Troop * AttackTroop);
     void RemoveMoveableTroops();
     vector<vector<TBVals>> ValsInit(double val);
@@ -196,7 +196,7 @@ public:
 
     void SubtractBlockingMoves(GroupSquareVals & TVals, int NumOfIters);
     void SubtractBlockingMove(GroupSquareVals & TVals, GroupSquareVals & AdjVals);
-    Array2d<double> GetGroupVals(Group * G);
+    BoardArray<double> GetGroupVals(Group * G);
     GroupSquareVals GetValsOfGroupMove(Group * G);
     void MoveGroup(Group * G);
     void AttackEnemies();

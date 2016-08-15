@@ -27,7 +27,7 @@ public:
     int GetIncome();
     int GetNumOfSquares();
     Point GetAvPoint();
-    void IterOverBuildFromDis(Array2d<int> & PlayerOcc, int DistanceFromBuild, function<void(Point)> IterFunc);//IterFunc takes one argument, Point
+    void IterOverBuildFromDis(BoardArray<int> & PlayerOcc, int DistanceFromBuild, function<void(Point)> IterFunc);//IterFunc takes one argument, Point
     int GetSize(){ return Place.size(); }
     int GetCost(){ return GetBuildingCost(Type); }
     bool AttemptAttack(Troop * AttackingTroop);

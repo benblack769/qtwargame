@@ -144,7 +144,7 @@ main_calc():
         TroopVals = FutureMoveVal(T,M,P)
                         for M in range(MAXMOVES)
                             for T in AllTroops
-                                for P in BoardSquares
+                                for P in ConstSquares
 
 
 

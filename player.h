@@ -16,8 +16,8 @@ void MakeDialogue(string S,string H);//this should be obsoleted!
 void AttackLocation(Point Loc,Troop * AttackingTroop);
 bool AttemptAttack(Point Loc,Troop * AttackingTroop);
 int GetDominationOfTroop(int Range, int Distance);
-extern Array2d<int> PlayerOcc;
-extern Array2d<Domination> PlayerDom;
+extern BoardArray<int> PlayerOcc;
+extern BoardArray<Domination> PlayerDom;
 class Player
 {
 public:
@@ -33,8 +33,8 @@ public:
     bool CurrentTurn;
     vector<Troop *> Troops;
     vector<Building *> Buildings;
-    Array2d<BaseType> TPlayerMap;
-    Array2d<int> NPlayerMap;
+    BoardArray<BaseType> TPlayerMap;
+    BoardArray<int> NPlayerMap;
     virtual void Save(ofstream & File);
     virtual void Load(ifstream & File);
     virtual void ClearData();
