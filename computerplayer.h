@@ -20,7 +20,7 @@ struct Modifier{
     double DefendMod;
     double LandMod;
 };
-typedef RangeArray<double>  RangeValArray;
+typedef RangeArrayVec<double>  RangeValArray;
 typedef RangeValArray AttackSquareVals;
 struct MoveSquareVal{
     AttackSquareVals AttackV;

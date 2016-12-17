@@ -16,6 +16,7 @@ inline Point bound(Point P){
     return Point{max(BoardSizeX,min(0,P.X)),max(BoardSizeY,min(0,P.Y))};
 }
 
+
 inline PIterContainter RectIterateInclusive(int xstart,int ystart,int xend,int yend){
     return PIterContainter(max(xstart,0),max(ystart,0),min(xend+1,BoardSizeX),min(yend+1,BoardSizeY));
 }

@@ -26,8 +26,8 @@ vector<int> random_order(int first,int last){
     return series;
 }
 
-RangeArray<double> ShrinkArray2d(BoardArray<double> & arr,ConstSquare Sq){
-    RangeArray<double> res(Sq);
+RangeArrayVec<double> ShrinkArray2d(BoardArray<double> & arr,ConstSquare Sq){
+    RangeArrayVec<double> res(Sq);
     for(Point P : SquareIterate(Sq)){
         res[P] = arr[P];
     }

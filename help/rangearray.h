@@ -5,22 +5,25 @@ template<typename ArrayType>
 class PartialRangeArray;
 
 template<typename ArrayType>
+using RA_VecIterator = RA_Iterator<ArrayType,vector<ArrayType>>;
+
+template<typename ArrayType>
 class PointPartialIterator:
-    public RA_Iterator<ArrayType>{
+    public RA_VecIterator<ArrayType>{
 public:
     vector<bool>::iterator BIter;
     PointPartialIterator(PartialRangeArray<ArrayType> * InArr) :
-        RA_Iterator<ArrayType>(InArr){
+        RA_VecIterator<ArrayType>(InArr){
         BIter = InArr->PointExists.begin();
         ContinueToNextReal();
     }
-    PointPartialIterator(): RA_Iterator<ArrayType>(){}
+    PointPartialIterator(): RA_VecIterator<ArrayType>(){}
     void ContinueToNextReal(){
         if (this->Spot.NotEnd() && !(*BIter))
             ++(*this);//coninues on counting if it is not passed the end of itself and it is not at an existing spot
     }
     void operator ++ (){
-        RA_Iterator<ArrayType>::operator++();
+        RA_VecIterator<ArrayType>::operator++();
         ++BIter;
         ContinueToNextReal();
     }
@@ -55,13 +58,21 @@ public:
     }
 };
 template<typename ArrayType>
+class RangeArrayVec:
+    public RangeArray<ArrayType,vector<ArrayType>>{
+    RangeArrayVec(Point Cen,int dis){
+        
+    }
+};
+
+template<typename ArrayType>
 class PartialRangeArray:
     public RangeArray<ArrayType>
 {
 public:
     using iterator = PointPartialIterator<ArrayType>;
     vector<bool> PointExists;
-    using RArray = RangeArray<ArrayType>;
+    using RArray = RangeArrayVec<ArrayType>;
     PartialRangeArray(Point InCenP, int InRange) :RArray(InCenP,InRange){
         int Size = this->XSize * this->YSize;
         PointExists.resize(Size);
