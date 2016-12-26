@@ -17,11 +17,9 @@ QMAKE_CXXFLAGS_RELEASE += -O3 -march=native -mtune=native
 win32{
 #put in directory for boost here if I need
 #INCLUDEPATH += ../../../../Downloads/boost_1_56_0/boost_1_56_0
-INCLUDEPATH += "../../PythonProjects/"
 }
 unix{
 QMAKE_LFLAGS += -Wl,-rpath,/usr/local/lib64
-INCLUDEPATH += ../../rand_projs/headerlib/
 }
 SOURCES += main.cpp \
 	computer/compmacromove.cpp \
@@ -72,7 +70,20 @@ HEADERS += \
 	troop.h \
 	troopinfo.h \
 	interface/screenhelp.h \
-	interface/debuginter.h
+	interface/debuginter.h \
+    headerlib/Array2d.hpp \
+    headerlib/backwards_iter.h \
+    headerlib/c++pythonGenerators.h \
+    headerlib/for_each_extend.hpp \
+    headerlib/intrinsic_help.h \
+    headerlib/point.hpp \
+    headerlib/RangeIterator.h \
+    headerlib/two_d_array.h \
+    headerlib/unpair.hpp \
+    headerlib/zip_for.hpp
 
 DISTFILES += \
-    AI_Descrip.txt
+    AI_Descrip.txt \
+    Pictures/Thumbs.db \
+    .gitignore \
+    readme.md
