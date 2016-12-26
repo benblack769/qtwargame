@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+/*
 #include "thingstuff.h"
 template<typename FuncType>
 void FastSquareIter(Point CenP,int Range,FuncType Func){
@@ -83,7 +84,7 @@ void FastBoardIter(FuncType Func){
         }
     }
     catch (...){}
-}
+}*/
 /*
 template<typename ThingListTy,typename Fn>
 inline void IterThroughCombs(ThingListTy & StartList,Fn Fun){

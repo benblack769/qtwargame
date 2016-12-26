@@ -17,20 +17,6 @@ constexpr double HIGHLIGHTSCALEFACTOR = 0.15;
 constexpr int MoneyResetVal = 2000;
 constexpr int MaximumDomination = 2000000;
 
-//debug preprocessor definitions
-//#define DrawRandomPath
-//#define DrawMoveValLoc
-//#define ShowSquareNums
-//#define ShowSubtractEffect
-//#define DrawMacroPath
-
-#define Debug_Macro_Move
-
-#ifdef Debug_Macro_Move
-constexpr int DEBUG_MACRO_WIDTH = 30;
-constexpr int DEBUG_MACRO_HEIGHT = 20;
-#endif
-
 struct Domination{
     int32_t Player;
     int32_t Influence;

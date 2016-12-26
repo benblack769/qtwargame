@@ -24,25 +24,18 @@ QMAKE_LFLAGS += -Wl,-rpath,/usr/local/lib64
 INCLUDEPATH += ../../rand_projs/headerlib/
 }
 SOURCES += main.cpp \
-	computer/compmacromove.cpp \
-	computer/computerbuild.cpp \
-	computer/computercore.cpp \
-	computer/computermove.cpp \
 	help/constvars.cpp \
 	interface/mainwindow.cpp \
 	interface/realplayer.cpp \
 	interface/screen.cpp \
 	interface/myview.cpp \
-	troops/catapult.cpp \
-	troops/soldier.cpp \
-	troops/specialbuilds.cpp \
-	troops/troop.cpp \
+	troop.cpp \
 	base.cpp \
 	building.cpp \
-	group.cpp \
 	player.cpp \
 	interface/screenhelp.cpp \
-	interface/debuginter.cpp
+	interface/debuginter.cpp \
+    boardtest.cpp
 
 FORMS    += mainwindow.ui
 
@@ -57,20 +50,13 @@ HEADERS += \
 	help/iterfns.h \
 	help/pointoperators.h \
 	help/rangearray.h \
-	help/thingstuff.h \
 	interface/screen.h \
-	troops/catapult.h \
-	troops/soldier.h \
-	troops/specialbuilds.h \
 	base.h \
 	building.h \
-	computerplayer.h \
 	globalinfo.h \
-	group.h \
 	player.h \
 	realplayer.h \
 	troop.h \
-	troopinfo.h \
 	interface/screenhelp.h \
 	interface/debuginter.h
 
