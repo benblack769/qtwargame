@@ -73,9 +73,7 @@ HEADERS += \
 	interface/debuginter.h \
     headerlib/Array2d.hpp \
     headerlib/backwards_iter.h \
-    headerlib/c++pythonGenerators.h \
     headerlib/for_each_extend.hpp \
-    headerlib/intrinsic_help.h \
     headerlib/point.hpp \
     headerlib/RangeIterator.h \
     headerlib/two_d_array.h \

@@ -47,6 +47,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionLoad1,&QAction::triggered, load1);
     connect(ui->actionLoad2,&QAction::triggered, load2);
     connect(ui->actionLoad3,&QAction::triggered, load3);
+    
+    connect(ui->actionShow,&QAction::triggered, load3);
+    connect(ui->actionHide,&QAction::triggered, load3);
 }
 MainWindow::~MainWindow()
 {

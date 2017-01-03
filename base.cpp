@@ -7,6 +7,7 @@
 #include "help/iterfns.h"
 #include <ctime>
 #include "base.h"
+#include "interface/screen.h"
 
 #ifdef Debug_Macro_Move
 #include "interface/debuginter.h"

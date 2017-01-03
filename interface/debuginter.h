@@ -13,6 +13,7 @@ class BoardG;
 class QPushButton;
 class QLabel;
 
+
 class DebugInter : public QWidget
 {
     Q_OBJECT
