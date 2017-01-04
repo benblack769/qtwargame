@@ -32,13 +32,12 @@ void BoardG::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent){
 }
 QColor player_to_color(int pnum){
     switch(pnum){
-    case 0:return QColor::blue();
-    case 1:return QColor::red();
-    case 2:return QColor::yellow();
-    case 3:return QColor::green();
+    case 0:return Qt::blue;
+    case 1:return Qt::red;
+    case 2:return Qt::yellow;
+    case 3:return Qt::green;
     }
 }
-
 PlayerDomDisplay::PlayerDomDisplay(BoardG * boardg){
     for(Point P : BoardIterate()){
         Domination pdom = PlayerDom[P];

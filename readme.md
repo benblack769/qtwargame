@@ -17,3 +17,9 @@ The art started by pulling clip-art from the internet, and then I have been slow
 After getting basic functionality down, I immediately started working on the AI, and after rewriting it 3 times, it is still not too great.
 
 Having the Debug_Macro_Moves #defined in globalinfo.h allows you to veiw the analysis that the AI is using to make decisions.
+
+### Current form
+
+Here is a screenshot of its current form, with debugging enabled.
+
+![debug_screenshot](https://raw.githubusercontent.com/weepingwillowben/qtwargame/master/screenshots/screenshots\debug_screenshot.PNG)
