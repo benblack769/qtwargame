@@ -22,4 +22,4 @@ Having the Debug_Macro_Moves #defined in globalinfo.h allows you to veiw the ana
 
 Here is a screenshot of its current form, with debugging enabled.
 
-![debug_screenshot](https://raw.githubusercontent.com/weepingwillowben/qtwargame/master/screenshots/screenshots\debug_screenshot.PNG)
+![debug_screenshot](https://raw.githubusercontent.com/weepingwillowben/qtwargame/master/screenshots/debug_screenshot.PNG)
