@@ -446,8 +446,8 @@ void Iterfeer(TroopChance & Att, TroopChance & Def, TroopValues & AVals, TroopVa
             double AltVal = Chance * TotDefVal * AC * DC;
             //optimizes by taking out multiplication from indicies access
             FastCoordSquareIter(P, Att.T->Range, [&](int X, int Y){
-                AVals.Info.Arr[X][Y] += AltVal;
-                DVals.Info.Arr[X][Y] -= AltVal;
+                AVals.Info.Arr[Y][X] += AltVal;
+                DVals.Info.Arr[Y][X] -= AltVal;
             });
         }
     }

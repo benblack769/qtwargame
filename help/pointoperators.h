@@ -29,18 +29,18 @@ struct BoardSquare{
     //disallow equality to help ensure constness
     void operator =(BoardSquare & Other) = delete;
 };
-using PItContainter = PIterContainter<BoardSizeX,BoardSizeY>;
-using PointIterator = PointIter<BoardSizeX,BoardSizeY>;
-
-inline PItContainter BoardIterate(){
-    return PItContainter(0,0,BoardSizeX,BoardSizeY);
+inline PIterContainter RectIterate(int xstart,int ystart,int xend,int yend){
+    return PIterContainter(max(0,xstart),max(0,ystart),min(BoardSizeX,xend),min(BoardSizeY,yend));
 }
-inline PItContainter SquareIterate(BoardSquare S){
-    return PItContainter(S.Cen,S.Range);
+inline PIterContainter BoardIterate(){
+    return PIterContainter(0,0,BoardSizeX,BoardSizeY);
 }
-inline PItContainter SquareIterate(Point Cen,int Range){
-    return PItContainter(Cen,Range);
+inline PIterContainter SquareIterate(Point Cen,int Range){
+    return RectIterate(Cen.X-Range,Cen.Y-Range,Cen.X+Range+1,Cen.Y+Range+1);
 }
-inline PItContainter RectIterateInclusive(int xstart,int ystart,int xend,int yend){
-    return PItContainter(xstart,ystart,xend+1,yend+1);
+inline PIterContainter SquareIterate(BoardSquare S){
+    return SquareIterate(S.Cen,S.Range);
+}
+inline PIterContainter RectIterateInclusive(int xstart,int ystart,int xend,int yend){
+    return RectIterate(xstart,ystart,xend+1,yend+1);
 }

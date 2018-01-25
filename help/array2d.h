@@ -29,10 +29,10 @@ public:
         memcpy(Arr, InArr.Arr, BoardSizeX * BoardSizeY * sizeof(ArrayType));
     }
     ArrayType & operator [](Point P){
-        return Arr[P.X][P.Y];
+        return Arr[P.Y][P.X];
     }
-    ArrayType * operator[](int X){
-        return Arr[X];
+    ArrayType * operator[](int Y){
+        return Arr[Y];
     }
     typedef ArrayType Ty;
     //macro hack allows easy making of operator overloads for Array2d

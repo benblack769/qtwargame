@@ -6,7 +6,7 @@ class RangeArray;
 template<typename ArrayType>
 class RA_Iterator{
 public:
-    PointIterator Spot;
+    PointIter Spot;
     using ArrIterator = typename vector<ArrayType>::iterator;
     ArrIterator ArrIt;
     RA_Iterator(RangeArray<ArrayType> * InArr, bool Begin){
@@ -16,9 +16,9 @@ public:
         int sy = InArr->Corner.Y;
         int xdis = InArr->XSize;
         int ydis = InArr->YSize;
-        Spot = PointIterator(sx, sy, sx + xdis - 1, sy + ydis - 1); //inclusive range here, so -1 is right
+        Spot = RectIterate(sx, sy, sx + xdis - 1, sy + ydis - 1).begin(); //inclusive range here, so -1 is right
         if (!Begin)
-            Spot = PointIterator(10, 10, 9, 9);//arbitrary square of negative size
+            Spot = RectIterate(10, 10, 9, 9).begin();//arbitrary square of negative size
     }
     bool operator != (RA_Iterator & Other){
         return Spot.NotEnd();

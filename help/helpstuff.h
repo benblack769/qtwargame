@@ -2,6 +2,7 @@
 #include "globalinfo.h"
 #include <vector>
 #include <cmath>
+#include "help/pointoperators.h"
 inline int RoundUpRatio(int Num, unsigned int Denom){
     return (Num + Denom - 1) / Denom;
 }
@@ -19,7 +20,7 @@ inline bool IsBetween(double Val, double LowerBound, double UpperBound){
 inline double DisConvert(int Dis){
     return 1.0 / (1 + Dis);
 }
-#define BlankSpot(xspot,yspot)  (PlayerOcc[xspot][yspot] < 0)
+#define BlankSpot(xspot,yspot)  (PlayerOcc[yspot][xspot] < 0)
 #define BlankPoint(PPoint)  (PlayerOcc[PPoint] < 0)
 #define NullPoint(PPoint) (PPoint.X < 0 || PPoint.Y < 0)
 
@@ -109,25 +110,7 @@ struct ValInfo{
     AssociateType Info;
 };
 using PointVal = ValInfo<Point>;
-template<typename InfoType>
-struct PointInfo{
-    Point P;
-    InfoType * Data;
-    PointInfo(){
-        P = { 0, 0 };
-        Info = NULL;
-    }
-    PointInfo(Point InP, InfoType * InInfo){
-        P = InP;
-        Data = InInfo;
-    }
-    InfoType & Info(){
-        return *Data;
-    }
-    void SetInfo(InfoType InInfo){
-        Info() = InInfo;
-    }
-};
+
 template<typename ty1,typename ty2,typename ty3>
 struct triple{
     ty1 first = ty1();

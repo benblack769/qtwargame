@@ -21,7 +21,7 @@ INCLUDEPATH += "../../PythonProjects/"
 }
 unix{
 QMAKE_LFLAGS += -Wl,-rpath,/usr/local/lib64
-INCLUDEPATH += ../../rand_projs/headerlib/
+INCLUDEPATH += ../../rand_projs/
 }
 SOURCES += main.cpp \
 	computer/compmacromove.cpp \
