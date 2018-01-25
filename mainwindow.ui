@@ -39,14 +39,16 @@
     <addaction name="actionLoad2"/>
     <addaction name="actionLoad3"/>
    </widget>
-   <widget class="QMenu" name="menuInstructions">
+   <widget class="QMenu" name="menuPlayerAreas">
     <property name="title">
-     <string>Instructions</string>
+     <string>Player Areas</string>
     </property>
+    <addaction name="actionShow"/>
+    <addaction name="actionHide"/>
    </widget>
    <addaction name="menuMenu1"/>
    <addaction name="menuLoad"/>
-   <addaction name="menuInstructions"/>
+   <addaction name="menuPlayerAreas"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -85,6 +87,16 @@
   <action name="actionLoad3">
    <property name="text">
     <string>Load3</string>
+   </property>
+  </action>
+  <action name="actionShow">
+   <property name="text">
+    <string>Show</string>
+   </property>
+  </action>
+  <action name="actionHide">
+   <property name="text">
+    <string>Hide</string>
    </property>
   </action>
  </widget>

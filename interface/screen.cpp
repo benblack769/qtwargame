@@ -82,6 +82,8 @@ Screen::Screen(){
     miniturn->setPos(0,100);
     miniturn->setZValue(1);
     moneybox->setPos(0,50);
+    
+    pdomdis = nullptr;
 }
 void Screen::placepic(QGraphicsItemGroup * group,const QPixmap & pic,int xpix,int ypix){
     QGraphicsPixmapItem * block = this->addPixmap(pic);

@@ -43,6 +43,14 @@ public:
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
 };
+class PlayerDomDisplay:
+    public QGraphicsItemGroup{
+public:
+    //construct to create display, destruct to remove display
+    PlayerDomDisplay(BoardG * boardg);
+protected:
+    void DrawColorSquare(QColor c, Point P, qreal opacity);
+};
 
 class MoneyG:
     public QGraphicsItemGroup{

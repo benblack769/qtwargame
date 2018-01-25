@@ -30,6 +30,28 @@ void BoardG::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent){
     else if(mouseEvent->button() == Qt::LeftButton)
         curp->LeftClick(BP);
 }
+QColor player_to_color(int pnum){
+    switch(pnum){
+    case 0:return Qt::blue;
+    case 1:return Qt::red;
+    case 2:return Qt::yellow;
+    case 3:return Qt::green;
+    }
+}
+PlayerDomDisplay::PlayerDomDisplay(BoardG * boardg){
+    for(Point P : BoardIterate()){
+        Domination pdom = PlayerDom[P];
+        qreal opacity = pdom.Influence/qreal(MaximumDomination);
+        DrawColorSquare(player_to_color(pdom.Player),P,opacity);
+    }
+} 
+
+void PlayerDomDisplay::DrawColorSquare(QColor c,Point P,qreal opacity){
+    QGraphicsRectItem * ptr = new QGraphicsRectItem(to_squaref(P),this);
+    ptr->setBrush(QBrush(c));
+    ptr->setOpacity(opacity);
+    ptr->setZValue(50);
+}
 
 MoneyG::MoneyG(QGraphicsItem * parent):QGraphicsItemGroup(parent){
     this->addToGroup(fullscreen->addRect(0,0,XINTERFACE,MONEYHEIGHT,QPen(Qt::black),QBrush(Qt::white)));
